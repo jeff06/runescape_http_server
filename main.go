@@ -31,7 +31,7 @@ func main() {
 
 func initDatabase() {
 	// init PostgreSQL
-	client, err := ent.Open("sqlite3", "./identifier.sqlite?_fk=1")
+	client, err := ent.Open("sqlite3", "./database/rs.sqlite?_fk=1")
 
 	// init MySQL
 	//client, err := ent.Open("mysql", "root:123456@tcp(localhost:3306)/test?parseTime=True")

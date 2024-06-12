@@ -11,9 +11,9 @@ var (
 	// SkillsColumns holds the columns for the "skills" table.
 	SkillsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "name", Type: field.TypeString, Default: "unknown"},
-		{Name: "description", Type: field.TypeString, Default: "unknown"},
-		{Name: "is_member", Type: field.TypeBool, Default: false},
+		{Name: "name", Type: field.TypeString},
+		{Name: "description", Type: field.TypeString},
+		{Name: "is_member", Type: field.TypeInt},
 	}
 	// SkillsTable holds the schema information for the "skills" table.
 	SkillsTable = &schema.Table{

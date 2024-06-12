@@ -13,9 +13,9 @@ type Skill struct {
 // Fields of the Skill.
 func (Skill) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("name").Default("unknown"),
-		field.String("description").Default("unknown"),
-		field.Bool("isMember").Default(false),
+		field.String("name").StructTag(`json:"name"`),
+		field.String("description").StructTag(`json:"description"`),
+		field.Int("is_member").StructTag(`json:"is_member"`),
 	}
 }
 

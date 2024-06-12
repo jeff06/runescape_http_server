@@ -17,11 +17,11 @@ type Skill struct {
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
 	// Name holds the value of the "name" field.
-	Name string `json:"name,omitempty"`
+	Name string `json:"name"`
 	// Description holds the value of the "description" field.
-	Description string `json:"description,omitempty"`
-	// IsMember holds the value of the "isMember" field.
-	IsMember     bool `json:"isMember,omitempty"`
+	Description string `json:"description"`
+	// IsMember holds the value of the "is_member" field.
+	IsMember     int `json:"is_member"`
 	selectValues sql.SelectValues
 }
 
@@ -30,9 +30,7 @@ func (*Skill) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case skill.FieldIsMember:
-			values[i] = new(sql.NullBool)
-		case skill.FieldID:
+		case skill.FieldID, skill.FieldIsMember:
 			values[i] = new(sql.NullInt64)
 		case skill.FieldName, skill.FieldDescription:
 			values[i] = new(sql.NullString)
@@ -70,10 +68,10 @@ func (s *Skill) assignValues(columns []string, values []any) error {
 				s.Description = value.String
 			}
 		case skill.FieldIsMember:
-			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field isMember", values[i])
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field is_member", values[i])
 			} else if value.Valid {
-				s.IsMember = value.Bool
+				s.IsMember = int(value.Int64)
 			}
 		default:
 			s.selectValues.Set(columns[i], values[i])
@@ -117,7 +115,7 @@ func (s *Skill) String() string {
 	builder.WriteString("description=")
 	builder.WriteString(s.Description)
 	builder.WriteString(", ")
-	builder.WriteString("isMember=")
+	builder.WriteString("is_member=")
 	builder.WriteString(fmt.Sprintf("%v", s.IsMember))
 	builder.WriteByte(')')
 	return builder.String()

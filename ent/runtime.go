@@ -2,27 +2,8 @@
 
 package ent
 
-import (
-	"runescape_http_server/ent/schema"
-	"runescape_http_server/ent/skill"
-)
-
 // The init function reads all schema descriptors with runtime code
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
-	skillFields := schema.Skill{}.Fields()
-	_ = skillFields
-	// skillDescName is the schema descriptor for name field.
-	skillDescName := skillFields[0].Descriptor()
-	// skill.DefaultName holds the default value on creation for the name field.
-	skill.DefaultName = skillDescName.Default.(string)
-	// skillDescDescription is the schema descriptor for description field.
-	skillDescDescription := skillFields[1].Descriptor()
-	// skill.DefaultDescription holds the default value on creation for the description field.
-	skill.DefaultDescription = skillDescDescription.Default.(string)
-	// skillDescIsMember is the schema descriptor for isMember field.
-	skillDescIsMember := skillFields[2].Descriptor()
-	// skill.DefaultIsMember holds the default value on creation for the isMember field.
-	skill.DefaultIsMember = skillDescIsMember.Default.(bool)
 }

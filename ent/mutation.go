@@ -34,7 +34,8 @@ type SkillMutation struct {
 	id            *int
 	name          *string
 	description   *string
-	isMember      *bool
+	is_member     *int
+	addis_member  *int
 	clearedFields map[string]struct{}
 	done          bool
 	oldValue      func(context.Context) (*Skill, error)
@@ -211,24 +212,25 @@ func (m *SkillMutation) ResetDescription() {
 	m.description = nil
 }
 
-// SetIsMember sets the "isMember" field.
-func (m *SkillMutation) SetIsMember(b bool) {
-	m.isMember = &b
+// SetIsMember sets the "is_member" field.
+func (m *SkillMutation) SetIsMember(i int) {
+	m.is_member = &i
+	m.addis_member = nil
 }
 
-// IsMember returns the value of the "isMember" field in the mutation.
-func (m *SkillMutation) IsMember() (r bool, exists bool) {
-	v := m.isMember
+// IsMember returns the value of the "is_member" field in the mutation.
+func (m *SkillMutation) IsMember() (r int, exists bool) {
+	v := m.is_member
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldIsMember returns the old "isMember" field's value of the Skill entity.
+// OldIsMember returns the old "is_member" field's value of the Skill entity.
 // If the Skill object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SkillMutation) OldIsMember(ctx context.Context) (v bool, err error) {
+func (m *SkillMutation) OldIsMember(ctx context.Context) (v int, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldIsMember is only allowed on UpdateOne operations")
 	}
@@ -242,9 +244,28 @@ func (m *SkillMutation) OldIsMember(ctx context.Context) (v bool, err error) {
 	return oldValue.IsMember, nil
 }
 
-// ResetIsMember resets all changes to the "isMember" field.
+// AddIsMember adds i to the "is_member" field.
+func (m *SkillMutation) AddIsMember(i int) {
+	if m.addis_member != nil {
+		*m.addis_member += i
+	} else {
+		m.addis_member = &i
+	}
+}
+
+// AddedIsMember returns the value that was added to the "is_member" field in this mutation.
+func (m *SkillMutation) AddedIsMember() (r int, exists bool) {
+	v := m.addis_member
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetIsMember resets all changes to the "is_member" field.
 func (m *SkillMutation) ResetIsMember() {
-	m.isMember = nil
+	m.is_member = nil
+	m.addis_member = nil
 }
 
 // Where appends a list predicates to the SkillMutation builder.
@@ -288,7 +309,7 @@ func (m *SkillMutation) Fields() []string {
 	if m.description != nil {
 		fields = append(fields, skill.FieldDescription)
 	}
-	if m.isMember != nil {
+	if m.is_member != nil {
 		fields = append(fields, skill.FieldIsMember)
 	}
 	return fields
@@ -344,7 +365,7 @@ func (m *SkillMutation) SetField(name string, value ent.Value) error {
 		m.SetDescription(v)
 		return nil
 	case skill.FieldIsMember:
-		v, ok := value.(bool)
+		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -357,13 +378,21 @@ func (m *SkillMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *SkillMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	if m.addis_member != nil {
+		fields = append(fields, skill.FieldIsMember)
+	}
+	return fields
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *SkillMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case skill.FieldIsMember:
+		return m.AddedIsMember()
+	}
 	return nil, false
 }
 
@@ -372,6 +401,13 @@ func (m *SkillMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *SkillMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case skill.FieldIsMember:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddIsMember(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Skill numeric field %s", name)
 }

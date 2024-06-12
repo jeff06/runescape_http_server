@@ -55,17 +55,24 @@ func (su *SkillUpdate) SetNillableDescription(s *string) *SkillUpdate {
 	return su
 }
 
-// SetIsMember sets the "isMember" field.
-func (su *SkillUpdate) SetIsMember(b bool) *SkillUpdate {
-	su.mutation.SetIsMember(b)
+// SetIsMember sets the "is_member" field.
+func (su *SkillUpdate) SetIsMember(i int) *SkillUpdate {
+	su.mutation.ResetIsMember()
+	su.mutation.SetIsMember(i)
 	return su
 }
 
-// SetNillableIsMember sets the "isMember" field if the given value is not nil.
-func (su *SkillUpdate) SetNillableIsMember(b *bool) *SkillUpdate {
-	if b != nil {
-		su.SetIsMember(*b)
+// SetNillableIsMember sets the "is_member" field if the given value is not nil.
+func (su *SkillUpdate) SetNillableIsMember(i *int) *SkillUpdate {
+	if i != nil {
+		su.SetIsMember(*i)
 	}
+	return su
+}
+
+// AddIsMember adds i to the "is_member" field.
+func (su *SkillUpdate) AddIsMember(i int) *SkillUpdate {
+	su.mutation.AddIsMember(i)
 	return su
 }
 
@@ -117,7 +124,10 @@ func (su *SkillUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.SetField(skill.FieldDescription, field.TypeString, value)
 	}
 	if value, ok := su.mutation.IsMember(); ok {
-		_spec.SetField(skill.FieldIsMember, field.TypeBool, value)
+		_spec.SetField(skill.FieldIsMember, field.TypeInt, value)
+	}
+	if value, ok := su.mutation.AddedIsMember(); ok {
+		_spec.AddField(skill.FieldIsMember, field.TypeInt, value)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, su.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -167,17 +177,24 @@ func (suo *SkillUpdateOne) SetNillableDescription(s *string) *SkillUpdateOne {
 	return suo
 }
 
-// SetIsMember sets the "isMember" field.
-func (suo *SkillUpdateOne) SetIsMember(b bool) *SkillUpdateOne {
-	suo.mutation.SetIsMember(b)
+// SetIsMember sets the "is_member" field.
+func (suo *SkillUpdateOne) SetIsMember(i int) *SkillUpdateOne {
+	suo.mutation.ResetIsMember()
+	suo.mutation.SetIsMember(i)
 	return suo
 }
 
-// SetNillableIsMember sets the "isMember" field if the given value is not nil.
-func (suo *SkillUpdateOne) SetNillableIsMember(b *bool) *SkillUpdateOne {
-	if b != nil {
-		suo.SetIsMember(*b)
+// SetNillableIsMember sets the "is_member" field if the given value is not nil.
+func (suo *SkillUpdateOne) SetNillableIsMember(i *int) *SkillUpdateOne {
+	if i != nil {
+		suo.SetIsMember(*i)
 	}
+	return suo
+}
+
+// AddIsMember adds i to the "is_member" field.
+func (suo *SkillUpdateOne) AddIsMember(i int) *SkillUpdateOne {
+	suo.mutation.AddIsMember(i)
 	return suo
 }
 
@@ -259,7 +276,10 @@ func (suo *SkillUpdateOne) sqlSave(ctx context.Context) (_node *Skill, err error
 		_spec.SetField(skill.FieldDescription, field.TypeString, value)
 	}
 	if value, ok := suo.mutation.IsMember(); ok {
-		_spec.SetField(skill.FieldIsMember, field.TypeBool, value)
+		_spec.SetField(skill.FieldIsMember, field.TypeInt, value)
+	}
+	if value, ok := suo.mutation.AddedIsMember(); ok {
+		_spec.AddField(skill.FieldIsMember, field.TypeInt, value)
 	}
 	_node = &Skill{config: suo.config}
 	_spec.Assign = _node.assignValues

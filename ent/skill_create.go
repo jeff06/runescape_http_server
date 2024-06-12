@@ -25,39 +25,15 @@ func (sc *SkillCreate) SetName(s string) *SkillCreate {
 	return sc
 }
 
-// SetNillableName sets the "name" field if the given value is not nil.
-func (sc *SkillCreate) SetNillableName(s *string) *SkillCreate {
-	if s != nil {
-		sc.SetName(*s)
-	}
-	return sc
-}
-
 // SetDescription sets the "description" field.
 func (sc *SkillCreate) SetDescription(s string) *SkillCreate {
 	sc.mutation.SetDescription(s)
 	return sc
 }
 
-// SetNillableDescription sets the "description" field if the given value is not nil.
-func (sc *SkillCreate) SetNillableDescription(s *string) *SkillCreate {
-	if s != nil {
-		sc.SetDescription(*s)
-	}
-	return sc
-}
-
-// SetIsMember sets the "isMember" field.
-func (sc *SkillCreate) SetIsMember(b bool) *SkillCreate {
-	sc.mutation.SetIsMember(b)
-	return sc
-}
-
-// SetNillableIsMember sets the "isMember" field if the given value is not nil.
-func (sc *SkillCreate) SetNillableIsMember(b *bool) *SkillCreate {
-	if b != nil {
-		sc.SetIsMember(*b)
-	}
+// SetIsMember sets the "is_member" field.
+func (sc *SkillCreate) SetIsMember(i int) *SkillCreate {
+	sc.mutation.SetIsMember(i)
 	return sc
 }
 
@@ -68,7 +44,6 @@ func (sc *SkillCreate) Mutation() *SkillMutation {
 
 // Save creates the Skill in the database.
 func (sc *SkillCreate) Save(ctx context.Context) (*Skill, error) {
-	sc.defaults()
 	return withHooks(ctx, sc.sqlSave, sc.mutation, sc.hooks)
 }
 
@@ -94,22 +69,6 @@ func (sc *SkillCreate) ExecX(ctx context.Context) {
 	}
 }
 
-// defaults sets the default values of the builder before save.
-func (sc *SkillCreate) defaults() {
-	if _, ok := sc.mutation.Name(); !ok {
-		v := skill.DefaultName
-		sc.mutation.SetName(v)
-	}
-	if _, ok := sc.mutation.Description(); !ok {
-		v := skill.DefaultDescription
-		sc.mutation.SetDescription(v)
-	}
-	if _, ok := sc.mutation.IsMember(); !ok {
-		v := skill.DefaultIsMember
-		sc.mutation.SetIsMember(v)
-	}
-}
-
 // check runs all checks and user-defined validators on the builder.
 func (sc *SkillCreate) check() error {
 	if _, ok := sc.mutation.Name(); !ok {
@@ -119,7 +78,7 @@ func (sc *SkillCreate) check() error {
 		return &ValidationError{Name: "description", err: errors.New(`ent: missing required field "Skill.description"`)}
 	}
 	if _, ok := sc.mutation.IsMember(); !ok {
-		return &ValidationError{Name: "isMember", err: errors.New(`ent: missing required field "Skill.isMember"`)}
+		return &ValidationError{Name: "is_member", err: errors.New(`ent: missing required field "Skill.is_member"`)}
 	}
 	return nil
 }
@@ -156,7 +115,7 @@ func (sc *SkillCreate) createSpec() (*Skill, *sqlgraph.CreateSpec) {
 		_node.Description = value
 	}
 	if value, ok := sc.mutation.IsMember(); ok {
-		_spec.SetField(skill.FieldIsMember, field.TypeBool, value)
+		_spec.SetField(skill.FieldIsMember, field.TypeInt, value)
 		_node.IsMember = value
 	}
 	return _node, _spec
@@ -180,7 +139,6 @@ func (scb *SkillCreateBulk) Save(ctx context.Context) ([]*Skill, error) {
 	for i := range scb.builders {
 		func(i int, root context.Context) {
 			builder := scb.builders[i]
-			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*SkillMutation)
 				if !ok {

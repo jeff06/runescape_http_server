@@ -15,7 +15,7 @@ const (
 	FieldName = "name"
 	// FieldDescription holds the string denoting the description field in the database.
 	FieldDescription = "description"
-	// FieldIsMember holds the string denoting the ismember field in the database.
+	// FieldIsMember holds the string denoting the is_member field in the database.
 	FieldIsMember = "is_member"
 	// Table holds the table name of the skill in the database.
 	Table = "skills"
@@ -39,15 +39,6 @@ func ValidColumn(column string) bool {
 	return false
 }
 
-var (
-	// DefaultName holds the default value on creation for the "name" field.
-	DefaultName string
-	// DefaultDescription holds the default value on creation for the "description" field.
-	DefaultDescription string
-	// DefaultIsMember holds the default value on creation for the "isMember" field.
-	DefaultIsMember bool
-)
-
 // OrderOption defines the ordering options for the Skill queries.
 type OrderOption func(*sql.Selector)
 
@@ -66,7 +57,7 @@ func ByDescription(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDescription, opts...).ToFunc()
 }
 
-// ByIsMember orders the results by the isMember field.
+// ByIsMember orders the results by the is_member field.
 func ByIsMember(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldIsMember, opts...).ToFunc()
 }

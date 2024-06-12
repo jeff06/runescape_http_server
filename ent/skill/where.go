@@ -63,8 +63,8 @@ func Description(v string) predicate.Skill {
 	return predicate.Skill(sql.FieldEQ(FieldDescription, v))
 }
 
-// IsMember applies equality check predicate on the "isMember" field. It's identical to IsMemberEQ.
-func IsMember(v bool) predicate.Skill {
+// IsMember applies equality check predicate on the "is_member" field. It's identical to IsMemberEQ.
+func IsMember(v int) predicate.Skill {
 	return predicate.Skill(sql.FieldEQ(FieldIsMember, v))
 }
 
@@ -198,14 +198,44 @@ func DescriptionContainsFold(v string) predicate.Skill {
 	return predicate.Skill(sql.FieldContainsFold(FieldDescription, v))
 }
 
-// IsMemberEQ applies the EQ predicate on the "isMember" field.
-func IsMemberEQ(v bool) predicate.Skill {
+// IsMemberEQ applies the EQ predicate on the "is_member" field.
+func IsMemberEQ(v int) predicate.Skill {
 	return predicate.Skill(sql.FieldEQ(FieldIsMember, v))
 }
 
-// IsMemberNEQ applies the NEQ predicate on the "isMember" field.
-func IsMemberNEQ(v bool) predicate.Skill {
+// IsMemberNEQ applies the NEQ predicate on the "is_member" field.
+func IsMemberNEQ(v int) predicate.Skill {
 	return predicate.Skill(sql.FieldNEQ(FieldIsMember, v))
+}
+
+// IsMemberIn applies the In predicate on the "is_member" field.
+func IsMemberIn(vs ...int) predicate.Skill {
+	return predicate.Skill(sql.FieldIn(FieldIsMember, vs...))
+}
+
+// IsMemberNotIn applies the NotIn predicate on the "is_member" field.
+func IsMemberNotIn(vs ...int) predicate.Skill {
+	return predicate.Skill(sql.FieldNotIn(FieldIsMember, vs...))
+}
+
+// IsMemberGT applies the GT predicate on the "is_member" field.
+func IsMemberGT(v int) predicate.Skill {
+	return predicate.Skill(sql.FieldGT(FieldIsMember, v))
+}
+
+// IsMemberGTE applies the GTE predicate on the "is_member" field.
+func IsMemberGTE(v int) predicate.Skill {
+	return predicate.Skill(sql.FieldGTE(FieldIsMember, v))
+}
+
+// IsMemberLT applies the LT predicate on the "is_member" field.
+func IsMemberLT(v int) predicate.Skill {
+	return predicate.Skill(sql.FieldLT(FieldIsMember, v))
+}
+
+// IsMemberLTE applies the LTE predicate on the "is_member" field.
+func IsMemberLTE(v int) predicate.Skill {
+	return predicate.Skill(sql.FieldLTE(FieldIsMember, v))
 }
 
 // And groups predicates with the AND operator between them.
