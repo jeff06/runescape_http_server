@@ -6,6 +6,7 @@ import (
 	"runescape_http_server/ent/predicate"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 // ID filters vertices based on their ID field.
@@ -236,6 +237,29 @@ func IsMemberLT(v int) predicate.Skill {
 // IsMemberLTE applies the LTE predicate on the "is_member" field.
 func IsMemberLTE(v int) predicate.Skill {
 	return predicate.Skill(sql.FieldLTE(FieldIsMember, v))
+}
+
+// HasUnlocks applies the HasEdge predicate on the "unlocks" edge.
+func HasUnlocks() predicate.Skill {
+	return predicate.Skill(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, UnlocksTable, UnlocksColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasUnlocksWith applies the HasEdge predicate on the "unlocks" edge with a given conditions (other predicates).
+func HasUnlocksWith(preds ...predicate.Unlock) predicate.Skill {
+	return predicate.Skill(func(s *sql.Selector) {
+		step := newUnlocksStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.

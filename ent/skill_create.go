@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"runescape_http_server/ent/skill"
+	"runescape_http_server/ent/unlock"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -35,6 +36,21 @@ func (sc *SkillCreate) SetDescription(s string) *SkillCreate {
 func (sc *SkillCreate) SetIsMember(i int) *SkillCreate {
 	sc.mutation.SetIsMember(i)
 	return sc
+}
+
+// AddUnlockIDs adds the "unlocks" edge to the Unlock entity by IDs.
+func (sc *SkillCreate) AddUnlockIDs(ids ...int) *SkillCreate {
+	sc.mutation.AddUnlockIDs(ids...)
+	return sc
+}
+
+// AddUnlocks adds the "unlocks" edges to the Unlock entity.
+func (sc *SkillCreate) AddUnlocks(u ...*Unlock) *SkillCreate {
+	ids := make([]int, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return sc.AddUnlockIDs(ids...)
 }
 
 // Mutation returns the SkillMutation object of the builder.
@@ -117,6 +133,22 @@ func (sc *SkillCreate) createSpec() (*Skill, *sqlgraph.CreateSpec) {
 	if value, ok := sc.mutation.IsMember(); ok {
 		_spec.SetField(skill.FieldIsMember, field.TypeInt, value)
 		_node.IsMember = value
+	}
+	if nodes := sc.mutation.UnlocksIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   skill.UnlocksTable,
+			Columns: []string{skill.UnlocksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(unlock.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

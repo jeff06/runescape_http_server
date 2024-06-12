@@ -4,10 +4,12 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 	"runescape_http_server/ent/predicate"
 	"runescape_http_server/ent/skill"
+	"runescape_http_server/ent/unlock"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -17,10 +19,11 @@ import (
 // SkillQuery is the builder for querying Skill entities.
 type SkillQuery struct {
 	config
-	ctx        *QueryContext
-	order      []skill.OrderOption
-	inters     []Interceptor
-	predicates []predicate.Skill
+	ctx         *QueryContext
+	order       []skill.OrderOption
+	inters      []Interceptor
+	predicates  []predicate.Skill
+	withUnlocks *UnlockQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -55,6 +58,28 @@ func (sq *SkillQuery) Unique(unique bool) *SkillQuery {
 func (sq *SkillQuery) Order(o ...skill.OrderOption) *SkillQuery {
 	sq.order = append(sq.order, o...)
 	return sq
+}
+
+// QueryUnlocks chains the current query on the "unlocks" edge.
+func (sq *SkillQuery) QueryUnlocks() *UnlockQuery {
+	query := (&UnlockClient{config: sq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := sq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := sq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(skill.Table, skill.FieldID, selector),
+			sqlgraph.To(unlock.Table, unlock.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, skill.UnlocksTable, skill.UnlocksColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // First returns the first Skill entity from the query.
@@ -244,15 +269,27 @@ func (sq *SkillQuery) Clone() *SkillQuery {
 		return nil
 	}
 	return &SkillQuery{
-		config:     sq.config,
-		ctx:        sq.ctx.Clone(),
-		order:      append([]skill.OrderOption{}, sq.order...),
-		inters:     append([]Interceptor{}, sq.inters...),
-		predicates: append([]predicate.Skill{}, sq.predicates...),
+		config:      sq.config,
+		ctx:         sq.ctx.Clone(),
+		order:       append([]skill.OrderOption{}, sq.order...),
+		inters:      append([]Interceptor{}, sq.inters...),
+		predicates:  append([]predicate.Skill{}, sq.predicates...),
+		withUnlocks: sq.withUnlocks.Clone(),
 		// clone intermediate query.
 		sql:  sq.sql.Clone(),
 		path: sq.path,
 	}
+}
+
+// WithUnlocks tells the query-builder to eager-load the nodes that are connected to
+// the "unlocks" edge. The optional arguments are used to configure the query builder of the edge.
+func (sq *SkillQuery) WithUnlocks(opts ...func(*UnlockQuery)) *SkillQuery {
+	query := (&UnlockClient{config: sq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	sq.withUnlocks = query
+	return sq
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -331,8 +368,11 @@ func (sq *SkillQuery) prepareQuery(ctx context.Context) error {
 
 func (sq *SkillQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Skill, error) {
 	var (
-		nodes = []*Skill{}
-		_spec = sq.querySpec()
+		nodes       = []*Skill{}
+		_spec       = sq.querySpec()
+		loadedTypes = [1]bool{
+			sq.withUnlocks != nil,
+		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Skill).scanValues(nil, columns)
@@ -340,6 +380,7 @@ func (sq *SkillQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Skill,
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &Skill{config: sq.config}
 		nodes = append(nodes, node)
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -351,7 +392,45 @@ func (sq *SkillQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Skill,
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := sq.withUnlocks; query != nil {
+		if err := sq.loadUnlocks(ctx, query, nodes,
+			func(n *Skill) { n.Edges.Unlocks = []*Unlock{} },
+			func(n *Skill, e *Unlock) { n.Edges.Unlocks = append(n.Edges.Unlocks, e) }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
+}
+
+func (sq *SkillQuery) loadUnlocks(ctx context.Context, query *UnlockQuery, nodes []*Skill, init func(*Skill), assign func(*Skill, *Unlock)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*Skill)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(unlock.FieldIDSkill)
+	}
+	query.Where(predicate.Unlock(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(skill.UnlocksColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.IDSkill
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "id_skill" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
 }
 
 func (sq *SkillQuery) sqlCount(ctx context.Context) (int, error) {

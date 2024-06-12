@@ -4,6 +4,7 @@ package skill
 
 import (
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 const (
@@ -17,8 +18,17 @@ const (
 	FieldDescription = "description"
 	// FieldIsMember holds the string denoting the is_member field in the database.
 	FieldIsMember = "is_member"
+	// EdgeUnlocks holds the string denoting the unlocks edge name in mutations.
+	EdgeUnlocks = "unlocks"
 	// Table holds the table name of the skill in the database.
 	Table = "skills"
+	// UnlocksTable is the table that holds the unlocks relation/edge.
+	UnlocksTable = "unlocks"
+	// UnlocksInverseTable is the table name for the Unlock entity.
+	// It exists in this package in order to avoid circular dependency with the "unlock" package.
+	UnlocksInverseTable = "unlocks"
+	// UnlocksColumn is the table column denoting the unlocks relation/edge.
+	UnlocksColumn = "id_skill"
 )
 
 // Columns holds all SQL columns for skill fields.
@@ -60,4 +70,25 @@ func ByDescription(opts ...sql.OrderTermOption) OrderOption {
 // ByIsMember orders the results by the is_member field.
 func ByIsMember(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldIsMember, opts...).ToFunc()
+}
+
+// ByUnlocksCount orders the results by unlocks count.
+func ByUnlocksCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newUnlocksStep(), opts...)
+	}
+}
+
+// ByUnlocks orders the results by unlocks terms.
+func ByUnlocks(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newUnlocksStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+func newUnlocksStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(UnlocksInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, UnlocksTable, UnlocksColumn),
+	)
 }

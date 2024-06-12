@@ -6,5 +6,11 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// OtherRequirement is the predicate function for otherrequirement builders.
+type OtherRequirement func(*sql.Selector)
+
 // Skill is the predicate function for skill builders.
 type Skill func(*sql.Selector)
+
+// Unlock is the predicate function for unlock builders.
+type Unlock func(*sql.Selector)

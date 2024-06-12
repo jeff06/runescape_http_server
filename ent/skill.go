@@ -21,8 +21,29 @@ type Skill struct {
 	// Description holds the value of the "description" field.
 	Description string `json:"description"`
 	// IsMember holds the value of the "is_member" field.
-	IsMember     int `json:"is_member"`
+	IsMember int `json:"is_member"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the SkillQuery when eager-loading is set.
+	Edges        SkillEdges `json:"edges"`
 	selectValues sql.SelectValues
+}
+
+// SkillEdges holds the relations/edges for other nodes in the graph.
+type SkillEdges struct {
+	// Unlocks holds the value of the unlocks edge.
+	Unlocks []*Unlock `json:"unlocks,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+}
+
+// UnlocksOrErr returns the Unlocks value or an error if the edge
+// was not loaded in eager-loading.
+func (e SkillEdges) UnlocksOrErr() ([]*Unlock, error) {
+	if e.loadedTypes[0] {
+		return e.Unlocks, nil
+	}
+	return nil, &NotLoadedError{edge: "unlocks"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -84,6 +105,11 @@ func (s *Skill) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (s *Skill) Value(name string) (ent.Value, error) {
 	return s.selectValues.Get(name)
+}
+
+// QueryUnlocks queries the "unlocks" edge of the Skill entity.
+func (s *Skill) QueryUnlocks() *UnlockQuery {
+	return NewSkillClient(s.config).QueryUnlocks(s)
 }
 
 // Update returns a builder for updating this Skill.

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"runescape_http_server/ent/predicate"
 	"runescape_http_server/ent/skill"
+	"runescape_http_server/ent/unlock"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -76,9 +77,45 @@ func (su *SkillUpdate) AddIsMember(i int) *SkillUpdate {
 	return su
 }
 
+// AddUnlockIDs adds the "unlocks" edge to the Unlock entity by IDs.
+func (su *SkillUpdate) AddUnlockIDs(ids ...int) *SkillUpdate {
+	su.mutation.AddUnlockIDs(ids...)
+	return su
+}
+
+// AddUnlocks adds the "unlocks" edges to the Unlock entity.
+func (su *SkillUpdate) AddUnlocks(u ...*Unlock) *SkillUpdate {
+	ids := make([]int, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return su.AddUnlockIDs(ids...)
+}
+
 // Mutation returns the SkillMutation object of the builder.
 func (su *SkillUpdate) Mutation() *SkillMutation {
 	return su.mutation
+}
+
+// ClearUnlocks clears all "unlocks" edges to the Unlock entity.
+func (su *SkillUpdate) ClearUnlocks() *SkillUpdate {
+	su.mutation.ClearUnlocks()
+	return su
+}
+
+// RemoveUnlockIDs removes the "unlocks" edge to Unlock entities by IDs.
+func (su *SkillUpdate) RemoveUnlockIDs(ids ...int) *SkillUpdate {
+	su.mutation.RemoveUnlockIDs(ids...)
+	return su
+}
+
+// RemoveUnlocks removes "unlocks" edges to Unlock entities.
+func (su *SkillUpdate) RemoveUnlocks(u ...*Unlock) *SkillUpdate {
+	ids := make([]int, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return su.RemoveUnlockIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -128,6 +165,51 @@ func (su *SkillUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := su.mutation.AddedIsMember(); ok {
 		_spec.AddField(skill.FieldIsMember, field.TypeInt, value)
+	}
+	if su.mutation.UnlocksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   skill.UnlocksTable,
+			Columns: []string{skill.UnlocksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(unlock.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := su.mutation.RemovedUnlocksIDs(); len(nodes) > 0 && !su.mutation.UnlocksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   skill.UnlocksTable,
+			Columns: []string{skill.UnlocksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(unlock.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := su.mutation.UnlocksIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   skill.UnlocksTable,
+			Columns: []string{skill.UnlocksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(unlock.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, su.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -198,9 +280,45 @@ func (suo *SkillUpdateOne) AddIsMember(i int) *SkillUpdateOne {
 	return suo
 }
 
+// AddUnlockIDs adds the "unlocks" edge to the Unlock entity by IDs.
+func (suo *SkillUpdateOne) AddUnlockIDs(ids ...int) *SkillUpdateOne {
+	suo.mutation.AddUnlockIDs(ids...)
+	return suo
+}
+
+// AddUnlocks adds the "unlocks" edges to the Unlock entity.
+func (suo *SkillUpdateOne) AddUnlocks(u ...*Unlock) *SkillUpdateOne {
+	ids := make([]int, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return suo.AddUnlockIDs(ids...)
+}
+
 // Mutation returns the SkillMutation object of the builder.
 func (suo *SkillUpdateOne) Mutation() *SkillMutation {
 	return suo.mutation
+}
+
+// ClearUnlocks clears all "unlocks" edges to the Unlock entity.
+func (suo *SkillUpdateOne) ClearUnlocks() *SkillUpdateOne {
+	suo.mutation.ClearUnlocks()
+	return suo
+}
+
+// RemoveUnlockIDs removes the "unlocks" edge to Unlock entities by IDs.
+func (suo *SkillUpdateOne) RemoveUnlockIDs(ids ...int) *SkillUpdateOne {
+	suo.mutation.RemoveUnlockIDs(ids...)
+	return suo
+}
+
+// RemoveUnlocks removes "unlocks" edges to Unlock entities.
+func (suo *SkillUpdateOne) RemoveUnlocks(u ...*Unlock) *SkillUpdateOne {
+	ids := make([]int, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return suo.RemoveUnlockIDs(ids...)
 }
 
 // Where appends a list predicates to the SkillUpdate builder.
@@ -280,6 +398,51 @@ func (suo *SkillUpdateOne) sqlSave(ctx context.Context) (_node *Skill, err error
 	}
 	if value, ok := suo.mutation.AddedIsMember(); ok {
 		_spec.AddField(skill.FieldIsMember, field.TypeInt, value)
+	}
+	if suo.mutation.UnlocksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   skill.UnlocksTable,
+			Columns: []string{skill.UnlocksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(unlock.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := suo.mutation.RemovedUnlocksIDs(); len(nodes) > 0 && !suo.mutation.UnlocksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   skill.UnlocksTable,
+			Columns: []string{skill.UnlocksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(unlock.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := suo.mutation.UnlocksIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   skill.UnlocksTable,
+			Columns: []string{skill.UnlocksColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(unlock.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &Skill{config: suo.config}
 	_spec.Assign = _node.assignValues

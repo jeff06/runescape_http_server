@@ -1,0 +1,1 @@
+DELETE FROM other_requirements
