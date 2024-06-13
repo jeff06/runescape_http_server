@@ -1,4 +1,4 @@
-INSERT INTO skills (name, description, is_member) VALUES 
+INSERT INTO skills (name, description, is_member) VALUES
 ('Attack', 'Wielding stronger melee weapons and hitting monsters more accurately in Melee.', 0),
 ('Strength', 'Dealing more melee damage and equipping certain weapons.', 0),
 ('Defence', 'Wearing stronger armour and decreasing chance of being hit.', 0),
