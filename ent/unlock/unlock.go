@@ -18,14 +18,12 @@ const (
 	FieldName = "name"
 	// FieldDescription holds the string denoting the description field in the database.
 	FieldDescription = "description"
-	// FieldIsMember holds the string denoting the is_member field in the database.
-	FieldIsMember = "is_member"
+	// FieldOtherRequirement holds the string denoting the other_requirement field in the database.
+	FieldOtherRequirement = "other_requirement"
 	// FieldLevel holds the string denoting the level field in the database.
 	FieldLevel = "level"
 	// EdgeUnlockIDSkillFk holds the string denoting the unlock_id_skill_fk edge name in mutations.
 	EdgeUnlockIDSkillFk = "unlock_id_skill_fk"
-	// EdgeOtherRequirements holds the string denoting the other_requirements edge name in mutations.
-	EdgeOtherRequirements = "other_requirements"
 	// Table holds the table name of the unlock in the database.
 	Table = "unlocks"
 	// UnlockIDSkillFkTable is the table that holds the unlock_id_skill_fk relation/edge.
@@ -35,13 +33,6 @@ const (
 	UnlockIDSkillFkInverseTable = "skills"
 	// UnlockIDSkillFkColumn is the table column denoting the unlock_id_skill_fk relation/edge.
 	UnlockIDSkillFkColumn = "id_skill"
-	// OtherRequirementsTable is the table that holds the other_requirements relation/edge.
-	OtherRequirementsTable = "other_requirements"
-	// OtherRequirementsInverseTable is the table name for the OtherRequirement entity.
-	// It exists in this package in order to avoid circular dependency with the "otherrequirement" package.
-	OtherRequirementsInverseTable = "other_requirements"
-	// OtherRequirementsColumn is the table column denoting the other_requirements relation/edge.
-	OtherRequirementsColumn = "id_unlock"
 )
 
 // Columns holds all SQL columns for unlock fields.
@@ -50,7 +41,7 @@ var Columns = []string{
 	FieldIDSkill,
 	FieldName,
 	FieldDescription,
-	FieldIsMember,
+	FieldOtherRequirement,
 	FieldLevel,
 }
 
@@ -87,9 +78,9 @@ func ByDescription(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDescription, opts...).ToFunc()
 }
 
-// ByIsMember orders the results by the is_member field.
-func ByIsMember(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldIsMember, opts...).ToFunc()
+// ByOtherRequirement orders the results by the other_requirement field.
+func ByOtherRequirement(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOtherRequirement, opts...).ToFunc()
 }
 
 // ByLevel orders the results by the level field.
@@ -103,31 +94,10 @@ func ByUnlockIDSkillFkField(field string, opts ...sql.OrderTermOption) OrderOpti
 		sqlgraph.OrderByNeighborTerms(s, newUnlockIDSkillFkStep(), sql.OrderByField(field, opts...))
 	}
 }
-
-// ByOtherRequirementsCount orders the results by other_requirements count.
-func ByOtherRequirementsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newOtherRequirementsStep(), opts...)
-	}
-}
-
-// ByOtherRequirements orders the results by other_requirements terms.
-func ByOtherRequirements(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newOtherRequirementsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
 func newUnlockIDSkillFkStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(UnlockIDSkillFkInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, true, UnlockIDSkillFkTable, UnlockIDSkillFkColumn),
-	)
-}
-func newOtherRequirementsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(OtherRequirementsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, OtherRequirementsTable, OtherRequirementsColumn),
 	)
 }

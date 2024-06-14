@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"runescape_http_server/ent/otherrequirement"
 	"runescape_http_server/ent/predicate"
 	"runescape_http_server/ent/skill"
 	"runescape_http_server/ent/unlock"
@@ -77,24 +76,17 @@ func (uu *UnlockUpdate) SetNillableDescription(s *string) *UnlockUpdate {
 	return uu
 }
 
-// SetIsMember sets the "is_member" field.
-func (uu *UnlockUpdate) SetIsMember(i int) *UnlockUpdate {
-	uu.mutation.ResetIsMember()
-	uu.mutation.SetIsMember(i)
+// SetOtherRequirement sets the "other_requirement" field.
+func (uu *UnlockUpdate) SetOtherRequirement(s string) *UnlockUpdate {
+	uu.mutation.SetOtherRequirement(s)
 	return uu
 }
 
-// SetNillableIsMember sets the "is_member" field if the given value is not nil.
-func (uu *UnlockUpdate) SetNillableIsMember(i *int) *UnlockUpdate {
-	if i != nil {
-		uu.SetIsMember(*i)
+// SetNillableOtherRequirement sets the "other_requirement" field if the given value is not nil.
+func (uu *UnlockUpdate) SetNillableOtherRequirement(s *string) *UnlockUpdate {
+	if s != nil {
+		uu.SetOtherRequirement(*s)
 	}
-	return uu
-}
-
-// AddIsMember adds i to the "is_member" field.
-func (uu *UnlockUpdate) AddIsMember(i int) *UnlockUpdate {
-	uu.mutation.AddIsMember(i)
 	return uu
 }
 
@@ -138,21 +130,6 @@ func (uu *UnlockUpdate) SetUnlockIDSkillFk(s *Skill) *UnlockUpdate {
 	return uu.SetUnlockIDSkillFkID(s.ID)
 }
 
-// AddOtherRequirementIDs adds the "other_requirements" edge to the OtherRequirement entity by IDs.
-func (uu *UnlockUpdate) AddOtherRequirementIDs(ids ...int) *UnlockUpdate {
-	uu.mutation.AddOtherRequirementIDs(ids...)
-	return uu
-}
-
-// AddOtherRequirements adds the "other_requirements" edges to the OtherRequirement entity.
-func (uu *UnlockUpdate) AddOtherRequirements(o ...*OtherRequirement) *UnlockUpdate {
-	ids := make([]int, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
-	}
-	return uu.AddOtherRequirementIDs(ids...)
-}
-
 // Mutation returns the UnlockMutation object of the builder.
 func (uu *UnlockUpdate) Mutation() *UnlockMutation {
 	return uu.mutation
@@ -162,27 +139,6 @@ func (uu *UnlockUpdate) Mutation() *UnlockMutation {
 func (uu *UnlockUpdate) ClearUnlockIDSkillFk() *UnlockUpdate {
 	uu.mutation.ClearUnlockIDSkillFk()
 	return uu
-}
-
-// ClearOtherRequirements clears all "other_requirements" edges to the OtherRequirement entity.
-func (uu *UnlockUpdate) ClearOtherRequirements() *UnlockUpdate {
-	uu.mutation.ClearOtherRequirements()
-	return uu
-}
-
-// RemoveOtherRequirementIDs removes the "other_requirements" edge to OtherRequirement entities by IDs.
-func (uu *UnlockUpdate) RemoveOtherRequirementIDs(ids ...int) *UnlockUpdate {
-	uu.mutation.RemoveOtherRequirementIDs(ids...)
-	return uu
-}
-
-// RemoveOtherRequirements removes "other_requirements" edges to OtherRequirement entities.
-func (uu *UnlockUpdate) RemoveOtherRequirements(o ...*OtherRequirement) *UnlockUpdate {
-	ids := make([]int, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
-	}
-	return uu.RemoveOtherRequirementIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -227,11 +183,8 @@ func (uu *UnlockUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := uu.mutation.Description(); ok {
 		_spec.SetField(unlock.FieldDescription, field.TypeString, value)
 	}
-	if value, ok := uu.mutation.IsMember(); ok {
-		_spec.SetField(unlock.FieldIsMember, field.TypeInt, value)
-	}
-	if value, ok := uu.mutation.AddedIsMember(); ok {
-		_spec.AddField(unlock.FieldIsMember, field.TypeInt, value)
+	if value, ok := uu.mutation.OtherRequirement(); ok {
+		_spec.SetField(unlock.FieldOtherRequirement, field.TypeString, value)
 	}
 	if value, ok := uu.mutation.Level(); ok {
 		_spec.SetField(unlock.FieldLevel, field.TypeInt, value)
@@ -261,51 +214,6 @@ func (uu *UnlockUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(skill.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if uu.mutation.OtherRequirementsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   unlock.OtherRequirementsTable,
-			Columns: []string{unlock.OtherRequirementsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(otherrequirement.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uu.mutation.RemovedOtherRequirementsIDs(); len(nodes) > 0 && !uu.mutation.OtherRequirementsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   unlock.OtherRequirementsTable,
-			Columns: []string{unlock.OtherRequirementsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(otherrequirement.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uu.mutation.OtherRequirementsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   unlock.OtherRequirementsTable,
-			Columns: []string{unlock.OtherRequirementsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(otherrequirement.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -381,24 +289,17 @@ func (uuo *UnlockUpdateOne) SetNillableDescription(s *string) *UnlockUpdateOne {
 	return uuo
 }
 
-// SetIsMember sets the "is_member" field.
-func (uuo *UnlockUpdateOne) SetIsMember(i int) *UnlockUpdateOne {
-	uuo.mutation.ResetIsMember()
-	uuo.mutation.SetIsMember(i)
+// SetOtherRequirement sets the "other_requirement" field.
+func (uuo *UnlockUpdateOne) SetOtherRequirement(s string) *UnlockUpdateOne {
+	uuo.mutation.SetOtherRequirement(s)
 	return uuo
 }
 
-// SetNillableIsMember sets the "is_member" field if the given value is not nil.
-func (uuo *UnlockUpdateOne) SetNillableIsMember(i *int) *UnlockUpdateOne {
-	if i != nil {
-		uuo.SetIsMember(*i)
+// SetNillableOtherRequirement sets the "other_requirement" field if the given value is not nil.
+func (uuo *UnlockUpdateOne) SetNillableOtherRequirement(s *string) *UnlockUpdateOne {
+	if s != nil {
+		uuo.SetOtherRequirement(*s)
 	}
-	return uuo
-}
-
-// AddIsMember adds i to the "is_member" field.
-func (uuo *UnlockUpdateOne) AddIsMember(i int) *UnlockUpdateOne {
-	uuo.mutation.AddIsMember(i)
 	return uuo
 }
 
@@ -442,21 +343,6 @@ func (uuo *UnlockUpdateOne) SetUnlockIDSkillFk(s *Skill) *UnlockUpdateOne {
 	return uuo.SetUnlockIDSkillFkID(s.ID)
 }
 
-// AddOtherRequirementIDs adds the "other_requirements" edge to the OtherRequirement entity by IDs.
-func (uuo *UnlockUpdateOne) AddOtherRequirementIDs(ids ...int) *UnlockUpdateOne {
-	uuo.mutation.AddOtherRequirementIDs(ids...)
-	return uuo
-}
-
-// AddOtherRequirements adds the "other_requirements" edges to the OtherRequirement entity.
-func (uuo *UnlockUpdateOne) AddOtherRequirements(o ...*OtherRequirement) *UnlockUpdateOne {
-	ids := make([]int, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
-	}
-	return uuo.AddOtherRequirementIDs(ids...)
-}
-
 // Mutation returns the UnlockMutation object of the builder.
 func (uuo *UnlockUpdateOne) Mutation() *UnlockMutation {
 	return uuo.mutation
@@ -466,27 +352,6 @@ func (uuo *UnlockUpdateOne) Mutation() *UnlockMutation {
 func (uuo *UnlockUpdateOne) ClearUnlockIDSkillFk() *UnlockUpdateOne {
 	uuo.mutation.ClearUnlockIDSkillFk()
 	return uuo
-}
-
-// ClearOtherRequirements clears all "other_requirements" edges to the OtherRequirement entity.
-func (uuo *UnlockUpdateOne) ClearOtherRequirements() *UnlockUpdateOne {
-	uuo.mutation.ClearOtherRequirements()
-	return uuo
-}
-
-// RemoveOtherRequirementIDs removes the "other_requirements" edge to OtherRequirement entities by IDs.
-func (uuo *UnlockUpdateOne) RemoveOtherRequirementIDs(ids ...int) *UnlockUpdateOne {
-	uuo.mutation.RemoveOtherRequirementIDs(ids...)
-	return uuo
-}
-
-// RemoveOtherRequirements removes "other_requirements" edges to OtherRequirement entities.
-func (uuo *UnlockUpdateOne) RemoveOtherRequirements(o ...*OtherRequirement) *UnlockUpdateOne {
-	ids := make([]int, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
-	}
-	return uuo.RemoveOtherRequirementIDs(ids...)
 }
 
 // Where appends a list predicates to the UnlockUpdate builder.
@@ -561,11 +426,8 @@ func (uuo *UnlockUpdateOne) sqlSave(ctx context.Context) (_node *Unlock, err err
 	if value, ok := uuo.mutation.Description(); ok {
 		_spec.SetField(unlock.FieldDescription, field.TypeString, value)
 	}
-	if value, ok := uuo.mutation.IsMember(); ok {
-		_spec.SetField(unlock.FieldIsMember, field.TypeInt, value)
-	}
-	if value, ok := uuo.mutation.AddedIsMember(); ok {
-		_spec.AddField(unlock.FieldIsMember, field.TypeInt, value)
+	if value, ok := uuo.mutation.OtherRequirement(); ok {
+		_spec.SetField(unlock.FieldOtherRequirement, field.TypeString, value)
 	}
 	if value, ok := uuo.mutation.Level(); ok {
 		_spec.SetField(unlock.FieldLevel, field.TypeInt, value)
@@ -595,51 +457,6 @@ func (uuo *UnlockUpdateOne) sqlSave(ctx context.Context) (_node *Unlock, err err
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(skill.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if uuo.mutation.OtherRequirementsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   unlock.OtherRequirementsTable,
-			Columns: []string{unlock.OtherRequirementsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(otherrequirement.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uuo.mutation.RemovedOtherRequirementsIDs(); len(nodes) > 0 && !uuo.mutation.OtherRequirementsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   unlock.OtherRequirementsTable,
-			Columns: []string{unlock.OtherRequirementsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(otherrequirement.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uuo.mutation.OtherRequirementsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   unlock.OtherRequirementsTable,
-			Columns: []string{unlock.OtherRequirementsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(otherrequirement.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

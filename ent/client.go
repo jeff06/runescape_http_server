@@ -11,7 +11,6 @@ import (
 
 	"runescape_http_server/ent/migrate"
 
-	"runescape_http_server/ent/otherrequirement"
 	"runescape_http_server/ent/skill"
 	"runescape_http_server/ent/unlock"
 
@@ -26,8 +25,6 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
-	// OtherRequirement is the client for interacting with the OtherRequirement builders.
-	OtherRequirement *OtherRequirementClient
 	// Skill is the client for interacting with the Skill builders.
 	Skill *SkillClient
 	// Unlock is the client for interacting with the Unlock builders.
@@ -43,7 +40,6 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
-	c.OtherRequirement = NewOtherRequirementClient(c.config)
 	c.Skill = NewSkillClient(c.config)
 	c.Unlock = NewUnlockClient(c.config)
 }
@@ -136,11 +132,10 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:              ctx,
-		config:           cfg,
-		OtherRequirement: NewOtherRequirementClient(cfg),
-		Skill:            NewSkillClient(cfg),
-		Unlock:           NewUnlockClient(cfg),
+		ctx:    ctx,
+		config: cfg,
+		Skill:  NewSkillClient(cfg),
+		Unlock: NewUnlockClient(cfg),
 	}, nil
 }
 
@@ -158,18 +153,17 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:              ctx,
-		config:           cfg,
-		OtherRequirement: NewOtherRequirementClient(cfg),
-		Skill:            NewSkillClient(cfg),
-		Unlock:           NewUnlockClient(cfg),
+		ctx:    ctx,
+		config: cfg,
+		Skill:  NewSkillClient(cfg),
+		Unlock: NewUnlockClient(cfg),
 	}, nil
 }
 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		OtherRequirement.
+//		Skill.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -191,7 +185,6 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
-	c.OtherRequirement.Use(hooks...)
 	c.Skill.Use(hooks...)
 	c.Unlock.Use(hooks...)
 }
@@ -199,7 +192,6 @@ func (c *Client) Use(hooks ...Hook) {
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
-	c.OtherRequirement.Intercept(interceptors...)
 	c.Skill.Intercept(interceptors...)
 	c.Unlock.Intercept(interceptors...)
 }
@@ -207,163 +199,12 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
-	case *OtherRequirementMutation:
-		return c.OtherRequirement.mutate(ctx, m)
 	case *SkillMutation:
 		return c.Skill.mutate(ctx, m)
 	case *UnlockMutation:
 		return c.Unlock.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
-	}
-}
-
-// OtherRequirementClient is a client for the OtherRequirement schema.
-type OtherRequirementClient struct {
-	config
-}
-
-// NewOtherRequirementClient returns a client for the OtherRequirement from the given config.
-func NewOtherRequirementClient(c config) *OtherRequirementClient {
-	return &OtherRequirementClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `otherrequirement.Hooks(f(g(h())))`.
-func (c *OtherRequirementClient) Use(hooks ...Hook) {
-	c.hooks.OtherRequirement = append(c.hooks.OtherRequirement, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `otherrequirement.Intercept(f(g(h())))`.
-func (c *OtherRequirementClient) Intercept(interceptors ...Interceptor) {
-	c.inters.OtherRequirement = append(c.inters.OtherRequirement, interceptors...)
-}
-
-// Create returns a builder for creating a OtherRequirement entity.
-func (c *OtherRequirementClient) Create() *OtherRequirementCreate {
-	mutation := newOtherRequirementMutation(c.config, OpCreate)
-	return &OtherRequirementCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of OtherRequirement entities.
-func (c *OtherRequirementClient) CreateBulk(builders ...*OtherRequirementCreate) *OtherRequirementCreateBulk {
-	return &OtherRequirementCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *OtherRequirementClient) MapCreateBulk(slice any, setFunc func(*OtherRequirementCreate, int)) *OtherRequirementCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &OtherRequirementCreateBulk{err: fmt.Errorf("calling to OtherRequirementClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*OtherRequirementCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &OtherRequirementCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for OtherRequirement.
-func (c *OtherRequirementClient) Update() *OtherRequirementUpdate {
-	mutation := newOtherRequirementMutation(c.config, OpUpdate)
-	return &OtherRequirementUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *OtherRequirementClient) UpdateOne(or *OtherRequirement) *OtherRequirementUpdateOne {
-	mutation := newOtherRequirementMutation(c.config, OpUpdateOne, withOtherRequirement(or))
-	return &OtherRequirementUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *OtherRequirementClient) UpdateOneID(id int) *OtherRequirementUpdateOne {
-	mutation := newOtherRequirementMutation(c.config, OpUpdateOne, withOtherRequirementID(id))
-	return &OtherRequirementUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for OtherRequirement.
-func (c *OtherRequirementClient) Delete() *OtherRequirementDelete {
-	mutation := newOtherRequirementMutation(c.config, OpDelete)
-	return &OtherRequirementDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *OtherRequirementClient) DeleteOne(or *OtherRequirement) *OtherRequirementDeleteOne {
-	return c.DeleteOneID(or.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *OtherRequirementClient) DeleteOneID(id int) *OtherRequirementDeleteOne {
-	builder := c.Delete().Where(otherrequirement.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &OtherRequirementDeleteOne{builder}
-}
-
-// Query returns a query builder for OtherRequirement.
-func (c *OtherRequirementClient) Query() *OtherRequirementQuery {
-	return &OtherRequirementQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeOtherRequirement},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a OtherRequirement entity by its id.
-func (c *OtherRequirementClient) Get(ctx context.Context, id int) (*OtherRequirement, error) {
-	return c.Query().Where(otherrequirement.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *OtherRequirementClient) GetX(ctx context.Context, id int) *OtherRequirement {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryOtherRequirementIDUnlockFk queries the other_requirement_id_unlock_fk edge of a OtherRequirement.
-func (c *OtherRequirementClient) QueryOtherRequirementIDUnlockFk(or *OtherRequirement) *UnlockQuery {
-	query := (&UnlockClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := or.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(otherrequirement.Table, otherrequirement.FieldID, id),
-			sqlgraph.To(unlock.Table, unlock.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, otherrequirement.OtherRequirementIDUnlockFkTable, otherrequirement.OtherRequirementIDUnlockFkColumn),
-		)
-		fromV = sqlgraph.Neighbors(or.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *OtherRequirementClient) Hooks() []Hook {
-	return c.hooks.OtherRequirement
-}
-
-// Interceptors returns the client interceptors.
-func (c *OtherRequirementClient) Interceptors() []Interceptor {
-	return c.inters.OtherRequirement
-}
-
-func (c *OtherRequirementClient) mutate(ctx context.Context, m *OtherRequirementMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&OtherRequirementCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&OtherRequirementUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&OtherRequirementUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&OtherRequirementDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown OtherRequirement mutation op: %q", m.Op())
 	}
 }
 
@@ -640,22 +481,6 @@ func (c *UnlockClient) QueryUnlockIDSkillFk(u *Unlock) *SkillQuery {
 	return query
 }
 
-// QueryOtherRequirements queries the other_requirements edge of a Unlock.
-func (c *UnlockClient) QueryOtherRequirements(u *Unlock) *OtherRequirementQuery {
-	query := (&OtherRequirementClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := u.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(unlock.Table, unlock.FieldID, id),
-			sqlgraph.To(otherrequirement.Table, otherrequirement.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, unlock.OtherRequirementsTable, unlock.OtherRequirementsColumn),
-		)
-		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // Hooks returns the client hooks.
 func (c *UnlockClient) Hooks() []Hook {
 	return c.hooks.Unlock
@@ -684,9 +509,9 @@ func (c *UnlockClient) mutate(ctx context.Context, m *UnlockMutation) (Value, er
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		OtherRequirement, Skill, Unlock []ent.Hook
+		Skill, Unlock []ent.Hook
 	}
 	inters struct {
-		OtherRequirement, Skill, Unlock []ent.Interceptor
+		Skill, Unlock []ent.Interceptor
 	}
 )

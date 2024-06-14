@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"runescape_http_server/ent/otherrequirement"
 	"runescape_http_server/ent/skill"
 	"runescape_http_server/ent/unlock"
 
@@ -47,9 +46,9 @@ func (uc *UnlockCreate) SetDescription(s string) *UnlockCreate {
 	return uc
 }
 
-// SetIsMember sets the "is_member" field.
-func (uc *UnlockCreate) SetIsMember(i int) *UnlockCreate {
-	uc.mutation.SetIsMember(i)
+// SetOtherRequirement sets the "other_requirement" field.
+func (uc *UnlockCreate) SetOtherRequirement(s string) *UnlockCreate {
+	uc.mutation.SetOtherRequirement(s)
 	return uc
 }
 
@@ -76,21 +75,6 @@ func (uc *UnlockCreate) SetNillableUnlockIDSkillFkID(id *int) *UnlockCreate {
 // SetUnlockIDSkillFk sets the "unlock_id_skill_fk" edge to the Skill entity.
 func (uc *UnlockCreate) SetUnlockIDSkillFk(s *Skill) *UnlockCreate {
 	return uc.SetUnlockIDSkillFkID(s.ID)
-}
-
-// AddOtherRequirementIDs adds the "other_requirements" edge to the OtherRequirement entity by IDs.
-func (uc *UnlockCreate) AddOtherRequirementIDs(ids ...int) *UnlockCreate {
-	uc.mutation.AddOtherRequirementIDs(ids...)
-	return uc
-}
-
-// AddOtherRequirements adds the "other_requirements" edges to the OtherRequirement entity.
-func (uc *UnlockCreate) AddOtherRequirements(o ...*OtherRequirement) *UnlockCreate {
-	ids := make([]int, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
-	}
-	return uc.AddOtherRequirementIDs(ids...)
 }
 
 // Mutation returns the UnlockMutation object of the builder.
@@ -133,8 +117,8 @@ func (uc *UnlockCreate) check() error {
 	if _, ok := uc.mutation.Description(); !ok {
 		return &ValidationError{Name: "description", err: errors.New(`ent: missing required field "Unlock.description"`)}
 	}
-	if _, ok := uc.mutation.IsMember(); !ok {
-		return &ValidationError{Name: "is_member", err: errors.New(`ent: missing required field "Unlock.is_member"`)}
+	if _, ok := uc.mutation.OtherRequirement(); !ok {
+		return &ValidationError{Name: "other_requirement", err: errors.New(`ent: missing required field "Unlock.other_requirement"`)}
 	}
 	if _, ok := uc.mutation.Level(); !ok {
 		return &ValidationError{Name: "level", err: errors.New(`ent: missing required field "Unlock.level"`)}
@@ -173,9 +157,9 @@ func (uc *UnlockCreate) createSpec() (*Unlock, *sqlgraph.CreateSpec) {
 		_spec.SetField(unlock.FieldDescription, field.TypeString, value)
 		_node.Description = value
 	}
-	if value, ok := uc.mutation.IsMember(); ok {
-		_spec.SetField(unlock.FieldIsMember, field.TypeInt, value)
-		_node.IsMember = value
+	if value, ok := uc.mutation.OtherRequirement(); ok {
+		_spec.SetField(unlock.FieldOtherRequirement, field.TypeString, value)
+		_node.OtherRequirement = value
 	}
 	if value, ok := uc.mutation.Level(); ok {
 		_spec.SetField(unlock.FieldLevel, field.TypeInt, value)
@@ -196,22 +180,6 @@ func (uc *UnlockCreate) createSpec() (*Unlock, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.IDSkill = nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := uc.mutation.OtherRequirementsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   unlock.OtherRequirementsTable,
-			Columns: []string{unlock.OtherRequirementsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(otherrequirement.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

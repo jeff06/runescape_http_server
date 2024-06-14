@@ -69,9 +69,9 @@ func Description(v string) predicate.Unlock {
 	return predicate.Unlock(sql.FieldEQ(FieldDescription, v))
 }
 
-// IsMember applies equality check predicate on the "is_member" field. It's identical to IsMemberEQ.
-func IsMember(v int) predicate.Unlock {
-	return predicate.Unlock(sql.FieldEQ(FieldIsMember, v))
+// OtherRequirement applies equality check predicate on the "other_requirement" field. It's identical to OtherRequirementEQ.
+func OtherRequirement(v string) predicate.Unlock {
+	return predicate.Unlock(sql.FieldEQ(FieldOtherRequirement, v))
 }
 
 // Level applies equality check predicate on the "level" field. It's identical to LevelEQ.
@@ -239,44 +239,69 @@ func DescriptionContainsFold(v string) predicate.Unlock {
 	return predicate.Unlock(sql.FieldContainsFold(FieldDescription, v))
 }
 
-// IsMemberEQ applies the EQ predicate on the "is_member" field.
-func IsMemberEQ(v int) predicate.Unlock {
-	return predicate.Unlock(sql.FieldEQ(FieldIsMember, v))
+// OtherRequirementEQ applies the EQ predicate on the "other_requirement" field.
+func OtherRequirementEQ(v string) predicate.Unlock {
+	return predicate.Unlock(sql.FieldEQ(FieldOtherRequirement, v))
 }
 
-// IsMemberNEQ applies the NEQ predicate on the "is_member" field.
-func IsMemberNEQ(v int) predicate.Unlock {
-	return predicate.Unlock(sql.FieldNEQ(FieldIsMember, v))
+// OtherRequirementNEQ applies the NEQ predicate on the "other_requirement" field.
+func OtherRequirementNEQ(v string) predicate.Unlock {
+	return predicate.Unlock(sql.FieldNEQ(FieldOtherRequirement, v))
 }
 
-// IsMemberIn applies the In predicate on the "is_member" field.
-func IsMemberIn(vs ...int) predicate.Unlock {
-	return predicate.Unlock(sql.FieldIn(FieldIsMember, vs...))
+// OtherRequirementIn applies the In predicate on the "other_requirement" field.
+func OtherRequirementIn(vs ...string) predicate.Unlock {
+	return predicate.Unlock(sql.FieldIn(FieldOtherRequirement, vs...))
 }
 
-// IsMemberNotIn applies the NotIn predicate on the "is_member" field.
-func IsMemberNotIn(vs ...int) predicate.Unlock {
-	return predicate.Unlock(sql.FieldNotIn(FieldIsMember, vs...))
+// OtherRequirementNotIn applies the NotIn predicate on the "other_requirement" field.
+func OtherRequirementNotIn(vs ...string) predicate.Unlock {
+	return predicate.Unlock(sql.FieldNotIn(FieldOtherRequirement, vs...))
 }
 
-// IsMemberGT applies the GT predicate on the "is_member" field.
-func IsMemberGT(v int) predicate.Unlock {
-	return predicate.Unlock(sql.FieldGT(FieldIsMember, v))
+// OtherRequirementGT applies the GT predicate on the "other_requirement" field.
+func OtherRequirementGT(v string) predicate.Unlock {
+	return predicate.Unlock(sql.FieldGT(FieldOtherRequirement, v))
 }
 
-// IsMemberGTE applies the GTE predicate on the "is_member" field.
-func IsMemberGTE(v int) predicate.Unlock {
-	return predicate.Unlock(sql.FieldGTE(FieldIsMember, v))
+// OtherRequirementGTE applies the GTE predicate on the "other_requirement" field.
+func OtherRequirementGTE(v string) predicate.Unlock {
+	return predicate.Unlock(sql.FieldGTE(FieldOtherRequirement, v))
 }
 
-// IsMemberLT applies the LT predicate on the "is_member" field.
-func IsMemberLT(v int) predicate.Unlock {
-	return predicate.Unlock(sql.FieldLT(FieldIsMember, v))
+// OtherRequirementLT applies the LT predicate on the "other_requirement" field.
+func OtherRequirementLT(v string) predicate.Unlock {
+	return predicate.Unlock(sql.FieldLT(FieldOtherRequirement, v))
 }
 
-// IsMemberLTE applies the LTE predicate on the "is_member" field.
-func IsMemberLTE(v int) predicate.Unlock {
-	return predicate.Unlock(sql.FieldLTE(FieldIsMember, v))
+// OtherRequirementLTE applies the LTE predicate on the "other_requirement" field.
+func OtherRequirementLTE(v string) predicate.Unlock {
+	return predicate.Unlock(sql.FieldLTE(FieldOtherRequirement, v))
+}
+
+// OtherRequirementContains applies the Contains predicate on the "other_requirement" field.
+func OtherRequirementContains(v string) predicate.Unlock {
+	return predicate.Unlock(sql.FieldContains(FieldOtherRequirement, v))
+}
+
+// OtherRequirementHasPrefix applies the HasPrefix predicate on the "other_requirement" field.
+func OtherRequirementHasPrefix(v string) predicate.Unlock {
+	return predicate.Unlock(sql.FieldHasPrefix(FieldOtherRequirement, v))
+}
+
+// OtherRequirementHasSuffix applies the HasSuffix predicate on the "other_requirement" field.
+func OtherRequirementHasSuffix(v string) predicate.Unlock {
+	return predicate.Unlock(sql.FieldHasSuffix(FieldOtherRequirement, v))
+}
+
+// OtherRequirementEqualFold applies the EqualFold predicate on the "other_requirement" field.
+func OtherRequirementEqualFold(v string) predicate.Unlock {
+	return predicate.Unlock(sql.FieldEqualFold(FieldOtherRequirement, v))
+}
+
+// OtherRequirementContainsFold applies the ContainsFold predicate on the "other_requirement" field.
+func OtherRequirementContainsFold(v string) predicate.Unlock {
+	return predicate.Unlock(sql.FieldContainsFold(FieldOtherRequirement, v))
 }
 
 // LevelEQ applies the EQ predicate on the "level" field.
@@ -334,29 +359,6 @@ func HasUnlockIDSkillFk() predicate.Unlock {
 func HasUnlockIDSkillFkWith(preds ...predicate.Skill) predicate.Unlock {
 	return predicate.Unlock(func(s *sql.Selector) {
 		step := newUnlockIDSkillFkStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasOtherRequirements applies the HasEdge predicate on the "other_requirements" edge.
-func HasOtherRequirements() predicate.Unlock {
-	return predicate.Unlock(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, OtherRequirementsTable, OtherRequirementsColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasOtherRequirementsWith applies the HasEdge predicate on the "other_requirements" edge with a given conditions (other predicates).
-func HasOtherRequirementsWith(preds ...predicate.OtherRequirement) predicate.Unlock {
-	return predicate.Unlock(func(s *sql.Selector) {
-		step := newOtherRequirementsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

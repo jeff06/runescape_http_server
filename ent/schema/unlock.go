@@ -16,8 +16,7 @@ func (Unlock) Fields() []ent.Field {
 	return []ent.Field{
 		field.Int("id_skill").StructTag(`json:"idSkill"`).Optional(),
 		field.String("name").StructTag(`json:"name"`),
-		field.String("description").StructTag(`json:"description"`),
-		field.Int("is_member").StructTag(`json:"is_member"`),
+		field.String("other_requirement").StructTag(`json:"other_requirement"`),
 		field.Int("level").StructTag(`json:"level"`),
 	}
 }
@@ -29,6 +28,5 @@ func (Unlock) Edges() []ent.Edge {
 			Ref("unlocks").
 			Unique().
 			Field("id_skill"),
-		edge.To("other_requirements", OtherRequirement.Type),
 	}
 }

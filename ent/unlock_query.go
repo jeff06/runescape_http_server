@@ -4,10 +4,8 @@ package ent
 
 import (
 	"context"
-	"database/sql/driver"
 	"fmt"
 	"math"
-	"runescape_http_server/ent/otherrequirement"
 	"runescape_http_server/ent/predicate"
 	"runescape_http_server/ent/skill"
 	"runescape_http_server/ent/unlock"
@@ -20,12 +18,11 @@ import (
 // UnlockQuery is the builder for querying Unlock entities.
 type UnlockQuery struct {
 	config
-	ctx                   *QueryContext
-	order                 []unlock.OrderOption
-	inters                []Interceptor
-	predicates            []predicate.Unlock
-	withUnlockIDSkillFk   *SkillQuery
-	withOtherRequirements *OtherRequirementQuery
+	ctx                 *QueryContext
+	order               []unlock.OrderOption
+	inters              []Interceptor
+	predicates          []predicate.Unlock
+	withUnlockIDSkillFk *SkillQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -77,28 +74,6 @@ func (uq *UnlockQuery) QueryUnlockIDSkillFk() *SkillQuery {
 			sqlgraph.From(unlock.Table, unlock.FieldID, selector),
 			sqlgraph.To(skill.Table, skill.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, unlock.UnlockIDSkillFkTable, unlock.UnlockIDSkillFkColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryOtherRequirements chains the current query on the "other_requirements" edge.
-func (uq *UnlockQuery) QueryOtherRequirements() *OtherRequirementQuery {
-	query := (&OtherRequirementClient{config: uq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := uq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := uq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(unlock.Table, unlock.FieldID, selector),
-			sqlgraph.To(otherrequirement.Table, otherrequirement.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, unlock.OtherRequirementsTable, unlock.OtherRequirementsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
 		return fromU, nil
@@ -293,13 +268,12 @@ func (uq *UnlockQuery) Clone() *UnlockQuery {
 		return nil
 	}
 	return &UnlockQuery{
-		config:                uq.config,
-		ctx:                   uq.ctx.Clone(),
-		order:                 append([]unlock.OrderOption{}, uq.order...),
-		inters:                append([]Interceptor{}, uq.inters...),
-		predicates:            append([]predicate.Unlock{}, uq.predicates...),
-		withUnlockIDSkillFk:   uq.withUnlockIDSkillFk.Clone(),
-		withOtherRequirements: uq.withOtherRequirements.Clone(),
+		config:              uq.config,
+		ctx:                 uq.ctx.Clone(),
+		order:               append([]unlock.OrderOption{}, uq.order...),
+		inters:              append([]Interceptor{}, uq.inters...),
+		predicates:          append([]predicate.Unlock{}, uq.predicates...),
+		withUnlockIDSkillFk: uq.withUnlockIDSkillFk.Clone(),
 		// clone intermediate query.
 		sql:  uq.sql.Clone(),
 		path: uq.path,
@@ -314,17 +288,6 @@ func (uq *UnlockQuery) WithUnlockIDSkillFk(opts ...func(*SkillQuery)) *UnlockQue
 		opt(query)
 	}
 	uq.withUnlockIDSkillFk = query
-	return uq
-}
-
-// WithOtherRequirements tells the query-builder to eager-load the nodes that are connected to
-// the "other_requirements" edge. The optional arguments are used to configure the query builder of the edge.
-func (uq *UnlockQuery) WithOtherRequirements(opts ...func(*OtherRequirementQuery)) *UnlockQuery {
-	query := (&OtherRequirementClient{config: uq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	uq.withOtherRequirements = query
 	return uq
 }
 
@@ -406,9 +369,8 @@ func (uq *UnlockQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Unloc
 	var (
 		nodes       = []*Unlock{}
 		_spec       = uq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [1]bool{
 			uq.withUnlockIDSkillFk != nil,
-			uq.withOtherRequirements != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -432,13 +394,6 @@ func (uq *UnlockQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Unloc
 	if query := uq.withUnlockIDSkillFk; query != nil {
 		if err := uq.loadUnlockIDSkillFk(ctx, query, nodes, nil,
 			func(n *Unlock, e *Skill) { n.Edges.UnlockIDSkillFk = e }); err != nil {
-			return nil, err
-		}
-	}
-	if query := uq.withOtherRequirements; query != nil {
-		if err := uq.loadOtherRequirements(ctx, query, nodes,
-			func(n *Unlock) { n.Edges.OtherRequirements = []*OtherRequirement{} },
-			func(n *Unlock, e *OtherRequirement) { n.Edges.OtherRequirements = append(n.Edges.OtherRequirements, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -471,36 +426,6 @@ func (uq *UnlockQuery) loadUnlockIDSkillFk(ctx context.Context, query *SkillQuer
 		for i := range nodes {
 			assign(nodes[i], n)
 		}
-	}
-	return nil
-}
-func (uq *UnlockQuery) loadOtherRequirements(ctx context.Context, query *OtherRequirementQuery, nodes []*Unlock, init func(*Unlock), assign func(*Unlock, *OtherRequirement)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[int]*Unlock)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(otherrequirement.FieldIDUnlock)
-	}
-	query.Where(predicate.OtherRequirement(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(unlock.OtherRequirementsColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.IDUnlock
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "id_unlock" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
 	}
 	return nil
 }

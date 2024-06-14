@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
-	"runescape_http_server/ent/otherrequirement"
 	"runescape_http_server/ent/skill"
 	"runescape_http_server/ent/unlock"
 	"sync"
@@ -75,9 +74,8 @@ var (
 func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			otherrequirement.Table: otherrequirement.ValidColumn,
-			skill.Table:            skill.ValidColumn,
-			unlock.Table:           unlock.ValidColumn,
+			skill.Table:  skill.ValidColumn,
+			unlock.Table: unlock.ValidColumn,
 		})
 	})
 	return columnCheck(table, column)

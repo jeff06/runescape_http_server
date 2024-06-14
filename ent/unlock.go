@@ -23,8 +23,8 @@ type Unlock struct {
 	Name string `json:"name"`
 	// Description holds the value of the "description" field.
 	Description string `json:"description"`
-	// IsMember holds the value of the "is_member" field.
-	IsMember int `json:"is_member"`
+	// OtherRequirement holds the value of the "other_requirement" field.
+	OtherRequirement string `json:"other_requirement"`
 	// Level holds the value of the "level" field.
 	Level int `json:"level"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -37,11 +37,9 @@ type Unlock struct {
 type UnlockEdges struct {
 	// UnlockIDSkillFk holds the value of the unlock_id_skill_fk edge.
 	UnlockIDSkillFk *Skill `json:"unlock_id_skill_fk,omitempty"`
-	// OtherRequirements holds the value of the other_requirements edge.
-	OtherRequirements []*OtherRequirement `json:"other_requirements,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [1]bool
 }
 
 // UnlockIDSkillFkOrErr returns the UnlockIDSkillFk value or an error if the edge
@@ -55,23 +53,14 @@ func (e UnlockEdges) UnlockIDSkillFkOrErr() (*Skill, error) {
 	return nil, &NotLoadedError{edge: "unlock_id_skill_fk"}
 }
 
-// OtherRequirementsOrErr returns the OtherRequirements value or an error if the edge
-// was not loaded in eager-loading.
-func (e UnlockEdges) OtherRequirementsOrErr() ([]*OtherRequirement, error) {
-	if e.loadedTypes[1] {
-		return e.OtherRequirements, nil
-	}
-	return nil, &NotLoadedError{edge: "other_requirements"}
-}
-
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Unlock) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case unlock.FieldID, unlock.FieldIDSkill, unlock.FieldIsMember, unlock.FieldLevel:
+		case unlock.FieldID, unlock.FieldIDSkill, unlock.FieldLevel:
 			values[i] = new(sql.NullInt64)
-		case unlock.FieldName, unlock.FieldDescription:
+		case unlock.FieldName, unlock.FieldDescription, unlock.FieldOtherRequirement:
 			values[i] = new(sql.NullString)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -112,11 +101,11 @@ func (u *Unlock) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				u.Description = value.String
 			}
-		case unlock.FieldIsMember:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field is_member", values[i])
+		case unlock.FieldOtherRequirement:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field other_requirement", values[i])
 			} else if value.Valid {
-				u.IsMember = int(value.Int64)
+				u.OtherRequirement = value.String
 			}
 		case unlock.FieldLevel:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -140,11 +129,6 @@ func (u *Unlock) Value(name string) (ent.Value, error) {
 // QueryUnlockIDSkillFk queries the "unlock_id_skill_fk" edge of the Unlock entity.
 func (u *Unlock) QueryUnlockIDSkillFk() *SkillQuery {
 	return NewUnlockClient(u.config).QueryUnlockIDSkillFk(u)
-}
-
-// QueryOtherRequirements queries the "other_requirements" edge of the Unlock entity.
-func (u *Unlock) QueryOtherRequirements() *OtherRequirementQuery {
-	return NewUnlockClient(u.config).QueryOtherRequirements(u)
 }
 
 // Update returns a builder for updating this Unlock.
@@ -179,8 +163,8 @@ func (u *Unlock) String() string {
 	builder.WriteString("description=")
 	builder.WriteString(u.Description)
 	builder.WriteString(", ")
-	builder.WriteString("is_member=")
-	builder.WriteString(fmt.Sprintf("%v", u.IsMember))
+	builder.WriteString("other_requirement=")
+	builder.WriteString(u.OtherRequirement)
 	builder.WriteString(", ")
 	builder.WriteString("level=")
 	builder.WriteString(fmt.Sprintf("%v", u.Level))

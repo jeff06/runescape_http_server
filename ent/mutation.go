@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"runescape_http_server/ent/otherrequirement"
 	"runescape_http_server/ent/predicate"
 	"runescape_http_server/ent/skill"
 	"runescape_http_server/ent/unlock"
@@ -25,830 +24,9 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeOtherRequirement = "OtherRequirement"
-	TypeSkill            = "Skill"
-	TypeUnlock           = "Unlock"
+	TypeSkill  = "Skill"
+	TypeUnlock = "Unlock"
 )
-
-// OtherRequirementMutation represents an operation that mutates the OtherRequirement nodes in the graph.
-type OtherRequirementMutation struct {
-	config
-	op                                    Op
-	typ                                   string
-	id                                    *int
-	name                                  *string
-	is_member                             *int
-	addis_member                          *int
-	is_quest                              *int
-	addis_quest                           *int
-	is_skill                              *int
-	addis_skill                           *int
-	id_of_requirement                     *int
-	addid_of_requirement                  *int
-	clearedFields                         map[string]struct{}
-	other_requirement_id_unlock_fk        *int
-	clearedother_requirement_id_unlock_fk bool
-	done                                  bool
-	oldValue                              func(context.Context) (*OtherRequirement, error)
-	predicates                            []predicate.OtherRequirement
-}
-
-var _ ent.Mutation = (*OtherRequirementMutation)(nil)
-
-// otherrequirementOption allows management of the mutation configuration using functional options.
-type otherrequirementOption func(*OtherRequirementMutation)
-
-// newOtherRequirementMutation creates new mutation for the OtherRequirement entity.
-func newOtherRequirementMutation(c config, op Op, opts ...otherrequirementOption) *OtherRequirementMutation {
-	m := &OtherRequirementMutation{
-		config:        c,
-		op:            op,
-		typ:           TypeOtherRequirement,
-		clearedFields: make(map[string]struct{}),
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-	return m
-}
-
-// withOtherRequirementID sets the ID field of the mutation.
-func withOtherRequirementID(id int) otherrequirementOption {
-	return func(m *OtherRequirementMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *OtherRequirement
-		)
-		m.oldValue = func(ctx context.Context) (*OtherRequirement, error) {
-			once.Do(func() {
-				if m.done {
-					err = errors.New("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().OtherRequirement.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withOtherRequirement sets the old OtherRequirement of the mutation.
-func withOtherRequirement(node *OtherRequirement) otherrequirementOption {
-	return func(m *OtherRequirementMutation) {
-		m.oldValue = func(context.Context) (*OtherRequirement, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
-// Client returns a new `ent.Client` from the mutation. If the mutation was
-// executed in a transaction (ent.Tx), a transactional client is returned.
-func (m OtherRequirementMutation) Client() *Client {
-	client := &Client{config: m.config}
-	client.init()
-	return client
-}
-
-// Tx returns an `ent.Tx` for mutations that were executed in transactions;
-// it returns an error otherwise.
-func (m OtherRequirementMutation) Tx() (*Tx, error) {
-	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, errors.New("ent: mutation is not running in a transaction")
-	}
-	tx := &Tx{config: m.config}
-	tx.init()
-	return tx, nil
-}
-
-// ID returns the ID value in the mutation. Note that the ID is only available
-// if it was provided to the builder or after it was returned from the database.
-func (m *OtherRequirementMutation) ID() (id int, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// IDs queries the database and returns the entity ids that match the mutation's predicate.
-// That means, if the mutation is applied within a transaction with an isolation level such
-// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
-// or updated by the mutation.
-func (m *OtherRequirementMutation) IDs(ctx context.Context) ([]int, error) {
-	switch {
-	case m.op.Is(OpUpdateOne | OpDeleteOne):
-		id, exists := m.ID()
-		if exists {
-			return []int{id}, nil
-		}
-		fallthrough
-	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().OtherRequirement.Query().Where(m.predicates...).IDs(ctx)
-	default:
-		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
-	}
-}
-
-// SetName sets the "name" field.
-func (m *OtherRequirementMutation) SetName(s string) {
-	m.name = &s
-}
-
-// Name returns the value of the "name" field in the mutation.
-func (m *OtherRequirementMutation) Name() (r string, exists bool) {
-	v := m.name
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldName returns the old "name" field's value of the OtherRequirement entity.
-// If the OtherRequirement object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OtherRequirementMutation) OldName(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldName is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldName requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldName: %w", err)
-	}
-	return oldValue.Name, nil
-}
-
-// ResetName resets all changes to the "name" field.
-func (m *OtherRequirementMutation) ResetName() {
-	m.name = nil
-}
-
-// SetIsMember sets the "is_member" field.
-func (m *OtherRequirementMutation) SetIsMember(i int) {
-	m.is_member = &i
-	m.addis_member = nil
-}
-
-// IsMember returns the value of the "is_member" field in the mutation.
-func (m *OtherRequirementMutation) IsMember() (r int, exists bool) {
-	v := m.is_member
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldIsMember returns the old "is_member" field's value of the OtherRequirement entity.
-// If the OtherRequirement object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OtherRequirementMutation) OldIsMember(ctx context.Context) (v int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldIsMember is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldIsMember requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldIsMember: %w", err)
-	}
-	return oldValue.IsMember, nil
-}
-
-// AddIsMember adds i to the "is_member" field.
-func (m *OtherRequirementMutation) AddIsMember(i int) {
-	if m.addis_member != nil {
-		*m.addis_member += i
-	} else {
-		m.addis_member = &i
-	}
-}
-
-// AddedIsMember returns the value that was added to the "is_member" field in this mutation.
-func (m *OtherRequirementMutation) AddedIsMember() (r int, exists bool) {
-	v := m.addis_member
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ResetIsMember resets all changes to the "is_member" field.
-func (m *OtherRequirementMutation) ResetIsMember() {
-	m.is_member = nil
-	m.addis_member = nil
-}
-
-// SetIsQuest sets the "is_quest" field.
-func (m *OtherRequirementMutation) SetIsQuest(i int) {
-	m.is_quest = &i
-	m.addis_quest = nil
-}
-
-// IsQuest returns the value of the "is_quest" field in the mutation.
-func (m *OtherRequirementMutation) IsQuest() (r int, exists bool) {
-	v := m.is_quest
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldIsQuest returns the old "is_quest" field's value of the OtherRequirement entity.
-// If the OtherRequirement object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OtherRequirementMutation) OldIsQuest(ctx context.Context) (v int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldIsQuest is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldIsQuest requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldIsQuest: %w", err)
-	}
-	return oldValue.IsQuest, nil
-}
-
-// AddIsQuest adds i to the "is_quest" field.
-func (m *OtherRequirementMutation) AddIsQuest(i int) {
-	if m.addis_quest != nil {
-		*m.addis_quest += i
-	} else {
-		m.addis_quest = &i
-	}
-}
-
-// AddedIsQuest returns the value that was added to the "is_quest" field in this mutation.
-func (m *OtherRequirementMutation) AddedIsQuest() (r int, exists bool) {
-	v := m.addis_quest
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ResetIsQuest resets all changes to the "is_quest" field.
-func (m *OtherRequirementMutation) ResetIsQuest() {
-	m.is_quest = nil
-	m.addis_quest = nil
-}
-
-// SetIsSkill sets the "is_skill" field.
-func (m *OtherRequirementMutation) SetIsSkill(i int) {
-	m.is_skill = &i
-	m.addis_skill = nil
-}
-
-// IsSkill returns the value of the "is_skill" field in the mutation.
-func (m *OtherRequirementMutation) IsSkill() (r int, exists bool) {
-	v := m.is_skill
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldIsSkill returns the old "is_skill" field's value of the OtherRequirement entity.
-// If the OtherRequirement object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OtherRequirementMutation) OldIsSkill(ctx context.Context) (v int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldIsSkill is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldIsSkill requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldIsSkill: %w", err)
-	}
-	return oldValue.IsSkill, nil
-}
-
-// AddIsSkill adds i to the "is_skill" field.
-func (m *OtherRequirementMutation) AddIsSkill(i int) {
-	if m.addis_skill != nil {
-		*m.addis_skill += i
-	} else {
-		m.addis_skill = &i
-	}
-}
-
-// AddedIsSkill returns the value that was added to the "is_skill" field in this mutation.
-func (m *OtherRequirementMutation) AddedIsSkill() (r int, exists bool) {
-	v := m.addis_skill
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ResetIsSkill resets all changes to the "is_skill" field.
-func (m *OtherRequirementMutation) ResetIsSkill() {
-	m.is_skill = nil
-	m.addis_skill = nil
-}
-
-// SetIDUnlock sets the "id_unlock" field.
-func (m *OtherRequirementMutation) SetIDUnlock(i int) {
-	m.other_requirement_id_unlock_fk = &i
-}
-
-// IDUnlock returns the value of the "id_unlock" field in the mutation.
-func (m *OtherRequirementMutation) IDUnlock() (r int, exists bool) {
-	v := m.other_requirement_id_unlock_fk
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldIDUnlock returns the old "id_unlock" field's value of the OtherRequirement entity.
-// If the OtherRequirement object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OtherRequirementMutation) OldIDUnlock(ctx context.Context) (v int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldIDUnlock is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldIDUnlock requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldIDUnlock: %w", err)
-	}
-	return oldValue.IDUnlock, nil
-}
-
-// ClearIDUnlock clears the value of the "id_unlock" field.
-func (m *OtherRequirementMutation) ClearIDUnlock() {
-	m.other_requirement_id_unlock_fk = nil
-	m.clearedFields[otherrequirement.FieldIDUnlock] = struct{}{}
-}
-
-// IDUnlockCleared returns if the "id_unlock" field was cleared in this mutation.
-func (m *OtherRequirementMutation) IDUnlockCleared() bool {
-	_, ok := m.clearedFields[otherrequirement.FieldIDUnlock]
-	return ok
-}
-
-// ResetIDUnlock resets all changes to the "id_unlock" field.
-func (m *OtherRequirementMutation) ResetIDUnlock() {
-	m.other_requirement_id_unlock_fk = nil
-	delete(m.clearedFields, otherrequirement.FieldIDUnlock)
-}
-
-// SetIDOfRequirement sets the "id_of_requirement" field.
-func (m *OtherRequirementMutation) SetIDOfRequirement(i int) {
-	m.id_of_requirement = &i
-	m.addid_of_requirement = nil
-}
-
-// IDOfRequirement returns the value of the "id_of_requirement" field in the mutation.
-func (m *OtherRequirementMutation) IDOfRequirement() (r int, exists bool) {
-	v := m.id_of_requirement
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldIDOfRequirement returns the old "id_of_requirement" field's value of the OtherRequirement entity.
-// If the OtherRequirement object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OtherRequirementMutation) OldIDOfRequirement(ctx context.Context) (v int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldIDOfRequirement is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldIDOfRequirement requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldIDOfRequirement: %w", err)
-	}
-	return oldValue.IDOfRequirement, nil
-}
-
-// AddIDOfRequirement adds i to the "id_of_requirement" field.
-func (m *OtherRequirementMutation) AddIDOfRequirement(i int) {
-	if m.addid_of_requirement != nil {
-		*m.addid_of_requirement += i
-	} else {
-		m.addid_of_requirement = &i
-	}
-}
-
-// AddedIDOfRequirement returns the value that was added to the "id_of_requirement" field in this mutation.
-func (m *OtherRequirementMutation) AddedIDOfRequirement() (r int, exists bool) {
-	v := m.addid_of_requirement
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ResetIDOfRequirement resets all changes to the "id_of_requirement" field.
-func (m *OtherRequirementMutation) ResetIDOfRequirement() {
-	m.id_of_requirement = nil
-	m.addid_of_requirement = nil
-}
-
-// SetOtherRequirementIDUnlockFkID sets the "other_requirement_id_unlock_fk" edge to the Unlock entity by id.
-func (m *OtherRequirementMutation) SetOtherRequirementIDUnlockFkID(id int) {
-	m.other_requirement_id_unlock_fk = &id
-}
-
-// ClearOtherRequirementIDUnlockFk clears the "other_requirement_id_unlock_fk" edge to the Unlock entity.
-func (m *OtherRequirementMutation) ClearOtherRequirementIDUnlockFk() {
-	m.clearedother_requirement_id_unlock_fk = true
-	m.clearedFields[otherrequirement.FieldIDUnlock] = struct{}{}
-}
-
-// OtherRequirementIDUnlockFkCleared reports if the "other_requirement_id_unlock_fk" edge to the Unlock entity was cleared.
-func (m *OtherRequirementMutation) OtherRequirementIDUnlockFkCleared() bool {
-	return m.IDUnlockCleared() || m.clearedother_requirement_id_unlock_fk
-}
-
-// OtherRequirementIDUnlockFkID returns the "other_requirement_id_unlock_fk" edge ID in the mutation.
-func (m *OtherRequirementMutation) OtherRequirementIDUnlockFkID() (id int, exists bool) {
-	if m.other_requirement_id_unlock_fk != nil {
-		return *m.other_requirement_id_unlock_fk, true
-	}
-	return
-}
-
-// OtherRequirementIDUnlockFkIDs returns the "other_requirement_id_unlock_fk" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// OtherRequirementIDUnlockFkID instead. It exists only for internal usage by the builders.
-func (m *OtherRequirementMutation) OtherRequirementIDUnlockFkIDs() (ids []int) {
-	if id := m.other_requirement_id_unlock_fk; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetOtherRequirementIDUnlockFk resets all changes to the "other_requirement_id_unlock_fk" edge.
-func (m *OtherRequirementMutation) ResetOtherRequirementIDUnlockFk() {
-	m.other_requirement_id_unlock_fk = nil
-	m.clearedother_requirement_id_unlock_fk = false
-}
-
-// Where appends a list predicates to the OtherRequirementMutation builder.
-func (m *OtherRequirementMutation) Where(ps ...predicate.OtherRequirement) {
-	m.predicates = append(m.predicates, ps...)
-}
-
-// WhereP appends storage-level predicates to the OtherRequirementMutation builder. Using this method,
-// users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *OtherRequirementMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.OtherRequirement, len(ps))
-	for i := range ps {
-		p[i] = ps[i]
-	}
-	m.Where(p...)
-}
-
-// Op returns the operation name.
-func (m *OtherRequirementMutation) Op() Op {
-	return m.op
-}
-
-// SetOp allows setting the mutation operation.
-func (m *OtherRequirementMutation) SetOp(op Op) {
-	m.op = op
-}
-
-// Type returns the node type of this mutation (OtherRequirement).
-func (m *OtherRequirementMutation) Type() string {
-	return m.typ
-}
-
-// Fields returns all fields that were changed during this mutation. Note that in
-// order to get all numeric fields that were incremented/decremented, call
-// AddedFields().
-func (m *OtherRequirementMutation) Fields() []string {
-	fields := make([]string, 0, 6)
-	if m.name != nil {
-		fields = append(fields, otherrequirement.FieldName)
-	}
-	if m.is_member != nil {
-		fields = append(fields, otherrequirement.FieldIsMember)
-	}
-	if m.is_quest != nil {
-		fields = append(fields, otherrequirement.FieldIsQuest)
-	}
-	if m.is_skill != nil {
-		fields = append(fields, otherrequirement.FieldIsSkill)
-	}
-	if m.other_requirement_id_unlock_fk != nil {
-		fields = append(fields, otherrequirement.FieldIDUnlock)
-	}
-	if m.id_of_requirement != nil {
-		fields = append(fields, otherrequirement.FieldIDOfRequirement)
-	}
-	return fields
-}
-
-// Field returns the value of a field with the given name. The second boolean
-// return value indicates that this field was not set, or was not defined in the
-// schema.
-func (m *OtherRequirementMutation) Field(name string) (ent.Value, bool) {
-	switch name {
-	case otherrequirement.FieldName:
-		return m.Name()
-	case otherrequirement.FieldIsMember:
-		return m.IsMember()
-	case otherrequirement.FieldIsQuest:
-		return m.IsQuest()
-	case otherrequirement.FieldIsSkill:
-		return m.IsSkill()
-	case otherrequirement.FieldIDUnlock:
-		return m.IDUnlock()
-	case otherrequirement.FieldIDOfRequirement:
-		return m.IDOfRequirement()
-	}
-	return nil, false
-}
-
-// OldField returns the old value of the field from the database. An error is
-// returned if the mutation operation is not UpdateOne, or the query to the
-// database failed.
-func (m *OtherRequirementMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case otherrequirement.FieldName:
-		return m.OldName(ctx)
-	case otherrequirement.FieldIsMember:
-		return m.OldIsMember(ctx)
-	case otherrequirement.FieldIsQuest:
-		return m.OldIsQuest(ctx)
-	case otherrequirement.FieldIsSkill:
-		return m.OldIsSkill(ctx)
-	case otherrequirement.FieldIDUnlock:
-		return m.OldIDUnlock(ctx)
-	case otherrequirement.FieldIDOfRequirement:
-		return m.OldIDOfRequirement(ctx)
-	}
-	return nil, fmt.Errorf("unknown OtherRequirement field %s", name)
-}
-
-// SetField sets the value of a field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *OtherRequirementMutation) SetField(name string, value ent.Value) error {
-	switch name {
-	case otherrequirement.FieldName:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetName(v)
-		return nil
-	case otherrequirement.FieldIsMember:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetIsMember(v)
-		return nil
-	case otherrequirement.FieldIsQuest:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetIsQuest(v)
-		return nil
-	case otherrequirement.FieldIsSkill:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetIsSkill(v)
-		return nil
-	case otherrequirement.FieldIDUnlock:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetIDUnlock(v)
-		return nil
-	case otherrequirement.FieldIDOfRequirement:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetIDOfRequirement(v)
-		return nil
-	}
-	return fmt.Errorf("unknown OtherRequirement field %s", name)
-}
-
-// AddedFields returns all numeric fields that were incremented/decremented during
-// this mutation.
-func (m *OtherRequirementMutation) AddedFields() []string {
-	var fields []string
-	if m.addis_member != nil {
-		fields = append(fields, otherrequirement.FieldIsMember)
-	}
-	if m.addis_quest != nil {
-		fields = append(fields, otherrequirement.FieldIsQuest)
-	}
-	if m.addis_skill != nil {
-		fields = append(fields, otherrequirement.FieldIsSkill)
-	}
-	if m.addid_of_requirement != nil {
-		fields = append(fields, otherrequirement.FieldIDOfRequirement)
-	}
-	return fields
-}
-
-// AddedField returns the numeric value that was incremented/decremented on a field
-// with the given name. The second boolean return value indicates that this field
-// was not set, or was not defined in the schema.
-func (m *OtherRequirementMutation) AddedField(name string) (ent.Value, bool) {
-	switch name {
-	case otherrequirement.FieldIsMember:
-		return m.AddedIsMember()
-	case otherrequirement.FieldIsQuest:
-		return m.AddedIsQuest()
-	case otherrequirement.FieldIsSkill:
-		return m.AddedIsSkill()
-	case otherrequirement.FieldIDOfRequirement:
-		return m.AddedIDOfRequirement()
-	}
-	return nil, false
-}
-
-// AddField adds the value to the field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *OtherRequirementMutation) AddField(name string, value ent.Value) error {
-	switch name {
-	case otherrequirement.FieldIsMember:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddIsMember(v)
-		return nil
-	case otherrequirement.FieldIsQuest:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddIsQuest(v)
-		return nil
-	case otherrequirement.FieldIsSkill:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddIsSkill(v)
-		return nil
-	case otherrequirement.FieldIDOfRequirement:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddIDOfRequirement(v)
-		return nil
-	}
-	return fmt.Errorf("unknown OtherRequirement numeric field %s", name)
-}
-
-// ClearedFields returns all nullable fields that were cleared during this
-// mutation.
-func (m *OtherRequirementMutation) ClearedFields() []string {
-	var fields []string
-	if m.FieldCleared(otherrequirement.FieldIDUnlock) {
-		fields = append(fields, otherrequirement.FieldIDUnlock)
-	}
-	return fields
-}
-
-// FieldCleared returns a boolean indicating if a field with the given name was
-// cleared in this mutation.
-func (m *OtherRequirementMutation) FieldCleared(name string) bool {
-	_, ok := m.clearedFields[name]
-	return ok
-}
-
-// ClearField clears the value of the field with the given name. It returns an
-// error if the field is not defined in the schema.
-func (m *OtherRequirementMutation) ClearField(name string) error {
-	switch name {
-	case otherrequirement.FieldIDUnlock:
-		m.ClearIDUnlock()
-		return nil
-	}
-	return fmt.Errorf("unknown OtherRequirement nullable field %s", name)
-}
-
-// ResetField resets all changes in the mutation for the field with the given name.
-// It returns an error if the field is not defined in the schema.
-func (m *OtherRequirementMutation) ResetField(name string) error {
-	switch name {
-	case otherrequirement.FieldName:
-		m.ResetName()
-		return nil
-	case otherrequirement.FieldIsMember:
-		m.ResetIsMember()
-		return nil
-	case otherrequirement.FieldIsQuest:
-		m.ResetIsQuest()
-		return nil
-	case otherrequirement.FieldIsSkill:
-		m.ResetIsSkill()
-		return nil
-	case otherrequirement.FieldIDUnlock:
-		m.ResetIDUnlock()
-		return nil
-	case otherrequirement.FieldIDOfRequirement:
-		m.ResetIDOfRequirement()
-		return nil
-	}
-	return fmt.Errorf("unknown OtherRequirement field %s", name)
-}
-
-// AddedEdges returns all edge names that were set/added in this mutation.
-func (m *OtherRequirementMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.other_requirement_id_unlock_fk != nil {
-		edges = append(edges, otherrequirement.EdgeOtherRequirementIDUnlockFk)
-	}
-	return edges
-}
-
-// AddedIDs returns all IDs (to other nodes) that were added for the given edge
-// name in this mutation.
-func (m *OtherRequirementMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case otherrequirement.EdgeOtherRequirementIDUnlockFk:
-		if id := m.other_requirement_id_unlock_fk; id != nil {
-			return []ent.Value{*id}
-		}
-	}
-	return nil
-}
-
-// RemovedEdges returns all edge names that were removed in this mutation.
-func (m *OtherRequirementMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
-	return edges
-}
-
-// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
-// the given name in this mutation.
-func (m *OtherRequirementMutation) RemovedIDs(name string) []ent.Value {
-	return nil
-}
-
-// ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *OtherRequirementMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.clearedother_requirement_id_unlock_fk {
-		edges = append(edges, otherrequirement.EdgeOtherRequirementIDUnlockFk)
-	}
-	return edges
-}
-
-// EdgeCleared returns a boolean which indicates if the edge with the given name
-// was cleared in this mutation.
-func (m *OtherRequirementMutation) EdgeCleared(name string) bool {
-	switch name {
-	case otherrequirement.EdgeOtherRequirementIDUnlockFk:
-		return m.clearedother_requirement_id_unlock_fk
-	}
-	return false
-}
-
-// ClearEdge clears the value of the edge with the given name. It returns an error
-// if that edge is not defined in the schema.
-func (m *OtherRequirementMutation) ClearEdge(name string) error {
-	switch name {
-	case otherrequirement.EdgeOtherRequirementIDUnlockFk:
-		m.ClearOtherRequirementIDUnlockFk()
-		return nil
-	}
-	return fmt.Errorf("unknown OtherRequirement unique edge %s", name)
-}
-
-// ResetEdge resets all changes to the edge with the given name in this mutation.
-// It returns an error if the edge is not defined in the schema.
-func (m *OtherRequirementMutation) ResetEdge(name string) error {
-	switch name {
-	case otherrequirement.EdgeOtherRequirementIDUnlockFk:
-		m.ResetOtherRequirementIDUnlockFk()
-		return nil
-	}
-	return fmt.Errorf("unknown OtherRequirement edge %s", name)
-}
 
 // SkillMutation represents an operation that mutates the Skill nodes in the graph.
 type SkillMutation struct {
@@ -1421,16 +599,12 @@ type UnlockMutation struct {
 	id                        *int
 	name                      *string
 	description               *string
-	is_member                 *int
-	addis_member              *int
+	other_requirement         *string
 	level                     *int
 	addlevel                  *int
 	clearedFields             map[string]struct{}
 	unlock_id_skill_fk        *int
 	clearedunlock_id_skill_fk bool
-	other_requirements        map[int]struct{}
-	removedother_requirements map[int]struct{}
-	clearedother_requirements bool
 	done                      bool
 	oldValue                  func(context.Context) (*Unlock, error)
 	predicates                []predicate.Unlock
@@ -1655,60 +829,40 @@ func (m *UnlockMutation) ResetDescription() {
 	m.description = nil
 }
 
-// SetIsMember sets the "is_member" field.
-func (m *UnlockMutation) SetIsMember(i int) {
-	m.is_member = &i
-	m.addis_member = nil
+// SetOtherRequirement sets the "other_requirement" field.
+func (m *UnlockMutation) SetOtherRequirement(s string) {
+	m.other_requirement = &s
 }
 
-// IsMember returns the value of the "is_member" field in the mutation.
-func (m *UnlockMutation) IsMember() (r int, exists bool) {
-	v := m.is_member
+// OtherRequirement returns the value of the "other_requirement" field in the mutation.
+func (m *UnlockMutation) OtherRequirement() (r string, exists bool) {
+	v := m.other_requirement
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldIsMember returns the old "is_member" field's value of the Unlock entity.
+// OldOtherRequirement returns the old "other_requirement" field's value of the Unlock entity.
 // If the Unlock object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UnlockMutation) OldIsMember(ctx context.Context) (v int, err error) {
+func (m *UnlockMutation) OldOtherRequirement(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldIsMember is only allowed on UpdateOne operations")
+		return v, errors.New("OldOtherRequirement is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldIsMember requires an ID field in the mutation")
+		return v, errors.New("OldOtherRequirement requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldIsMember: %w", err)
+		return v, fmt.Errorf("querying old value for OldOtherRequirement: %w", err)
 	}
-	return oldValue.IsMember, nil
+	return oldValue.OtherRequirement, nil
 }
 
-// AddIsMember adds i to the "is_member" field.
-func (m *UnlockMutation) AddIsMember(i int) {
-	if m.addis_member != nil {
-		*m.addis_member += i
-	} else {
-		m.addis_member = &i
-	}
-}
-
-// AddedIsMember returns the value that was added to the "is_member" field in this mutation.
-func (m *UnlockMutation) AddedIsMember() (r int, exists bool) {
-	v := m.addis_member
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ResetIsMember resets all changes to the "is_member" field.
-func (m *UnlockMutation) ResetIsMember() {
-	m.is_member = nil
-	m.addis_member = nil
+// ResetOtherRequirement resets all changes to the "other_requirement" field.
+func (m *UnlockMutation) ResetOtherRequirement() {
+	m.other_requirement = nil
 }
 
 // SetLevel sets the "level" field.
@@ -1807,60 +961,6 @@ func (m *UnlockMutation) ResetUnlockIDSkillFk() {
 	m.clearedunlock_id_skill_fk = false
 }
 
-// AddOtherRequirementIDs adds the "other_requirements" edge to the OtherRequirement entity by ids.
-func (m *UnlockMutation) AddOtherRequirementIDs(ids ...int) {
-	if m.other_requirements == nil {
-		m.other_requirements = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.other_requirements[ids[i]] = struct{}{}
-	}
-}
-
-// ClearOtherRequirements clears the "other_requirements" edge to the OtherRequirement entity.
-func (m *UnlockMutation) ClearOtherRequirements() {
-	m.clearedother_requirements = true
-}
-
-// OtherRequirementsCleared reports if the "other_requirements" edge to the OtherRequirement entity was cleared.
-func (m *UnlockMutation) OtherRequirementsCleared() bool {
-	return m.clearedother_requirements
-}
-
-// RemoveOtherRequirementIDs removes the "other_requirements" edge to the OtherRequirement entity by IDs.
-func (m *UnlockMutation) RemoveOtherRequirementIDs(ids ...int) {
-	if m.removedother_requirements == nil {
-		m.removedother_requirements = make(map[int]struct{})
-	}
-	for i := range ids {
-		delete(m.other_requirements, ids[i])
-		m.removedother_requirements[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedOtherRequirements returns the removed IDs of the "other_requirements" edge to the OtherRequirement entity.
-func (m *UnlockMutation) RemovedOtherRequirementsIDs() (ids []int) {
-	for id := range m.removedother_requirements {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// OtherRequirementsIDs returns the "other_requirements" edge IDs in the mutation.
-func (m *UnlockMutation) OtherRequirementsIDs() (ids []int) {
-	for id := range m.other_requirements {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetOtherRequirements resets all changes to the "other_requirements" edge.
-func (m *UnlockMutation) ResetOtherRequirements() {
-	m.other_requirements = nil
-	m.clearedother_requirements = false
-	m.removedother_requirements = nil
-}
-
 // Where appends a list predicates to the UnlockMutation builder.
 func (m *UnlockMutation) Where(ps ...predicate.Unlock) {
 	m.predicates = append(m.predicates, ps...)
@@ -1905,8 +1005,8 @@ func (m *UnlockMutation) Fields() []string {
 	if m.description != nil {
 		fields = append(fields, unlock.FieldDescription)
 	}
-	if m.is_member != nil {
-		fields = append(fields, unlock.FieldIsMember)
+	if m.other_requirement != nil {
+		fields = append(fields, unlock.FieldOtherRequirement)
 	}
 	if m.level != nil {
 		fields = append(fields, unlock.FieldLevel)
@@ -1925,8 +1025,8 @@ func (m *UnlockMutation) Field(name string) (ent.Value, bool) {
 		return m.Name()
 	case unlock.FieldDescription:
 		return m.Description()
-	case unlock.FieldIsMember:
-		return m.IsMember()
+	case unlock.FieldOtherRequirement:
+		return m.OtherRequirement()
 	case unlock.FieldLevel:
 		return m.Level()
 	}
@@ -1944,8 +1044,8 @@ func (m *UnlockMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldName(ctx)
 	case unlock.FieldDescription:
 		return m.OldDescription(ctx)
-	case unlock.FieldIsMember:
-		return m.OldIsMember(ctx)
+	case unlock.FieldOtherRequirement:
+		return m.OldOtherRequirement(ctx)
 	case unlock.FieldLevel:
 		return m.OldLevel(ctx)
 	}
@@ -1978,12 +1078,12 @@ func (m *UnlockMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetDescription(v)
 		return nil
-	case unlock.FieldIsMember:
-		v, ok := value.(int)
+	case unlock.FieldOtherRequirement:
+		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetIsMember(v)
+		m.SetOtherRequirement(v)
 		return nil
 	case unlock.FieldLevel:
 		v, ok := value.(int)
@@ -2000,9 +1100,6 @@ func (m *UnlockMutation) SetField(name string, value ent.Value) error {
 // this mutation.
 func (m *UnlockMutation) AddedFields() []string {
 	var fields []string
-	if m.addis_member != nil {
-		fields = append(fields, unlock.FieldIsMember)
-	}
 	if m.addlevel != nil {
 		fields = append(fields, unlock.FieldLevel)
 	}
@@ -2014,8 +1111,6 @@ func (m *UnlockMutation) AddedFields() []string {
 // was not set, or was not defined in the schema.
 func (m *UnlockMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
-	case unlock.FieldIsMember:
-		return m.AddedIsMember()
 	case unlock.FieldLevel:
 		return m.AddedLevel()
 	}
@@ -2027,13 +1122,6 @@ func (m *UnlockMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *UnlockMutation) AddField(name string, value ent.Value) error {
 	switch name {
-	case unlock.FieldIsMember:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddIsMember(v)
-		return nil
 	case unlock.FieldLevel:
 		v, ok := value.(int)
 		if !ok {
@@ -2086,8 +1174,8 @@ func (m *UnlockMutation) ResetField(name string) error {
 	case unlock.FieldDescription:
 		m.ResetDescription()
 		return nil
-	case unlock.FieldIsMember:
-		m.ResetIsMember()
+	case unlock.FieldOtherRequirement:
+		m.ResetOtherRequirement()
 		return nil
 	case unlock.FieldLevel:
 		m.ResetLevel()
@@ -2098,12 +1186,9 @@ func (m *UnlockMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UnlockMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 1)
 	if m.unlock_id_skill_fk != nil {
 		edges = append(edges, unlock.EdgeUnlockIDSkillFk)
-	}
-	if m.other_requirements != nil {
-		edges = append(edges, unlock.EdgeOtherRequirements)
 	}
 	return edges
 }
@@ -2116,47 +1201,27 @@ func (m *UnlockMutation) AddedIDs(name string) []ent.Value {
 		if id := m.unlock_id_skill_fk; id != nil {
 			return []ent.Value{*id}
 		}
-	case unlock.EdgeOtherRequirements:
-		ids := make([]ent.Value, 0, len(m.other_requirements))
-		for id := range m.other_requirements {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UnlockMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.removedother_requirements != nil {
-		edges = append(edges, unlock.EdgeOtherRequirements)
-	}
+	edges := make([]string, 0, 1)
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *UnlockMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	case unlock.EdgeOtherRequirements:
-		ids := make([]ent.Value, 0, len(m.removedother_requirements))
-		for id := range m.removedother_requirements {
-			ids = append(ids, id)
-		}
-		return ids
-	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UnlockMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 1)
 	if m.clearedunlock_id_skill_fk {
 		edges = append(edges, unlock.EdgeUnlockIDSkillFk)
-	}
-	if m.clearedother_requirements {
-		edges = append(edges, unlock.EdgeOtherRequirements)
 	}
 	return edges
 }
@@ -2167,8 +1232,6 @@ func (m *UnlockMutation) EdgeCleared(name string) bool {
 	switch name {
 	case unlock.EdgeUnlockIDSkillFk:
 		return m.clearedunlock_id_skill_fk
-	case unlock.EdgeOtherRequirements:
-		return m.clearedother_requirements
 	}
 	return false
 }
@@ -2190,9 +1253,6 @@ func (m *UnlockMutation) ResetEdge(name string) error {
 	switch name {
 	case unlock.EdgeUnlockIDSkillFk:
 		m.ResetUnlockIDSkillFk()
-		return nil
-	case unlock.EdgeOtherRequirements:
-		m.ResetOtherRequirements()
 		return nil
 	}
 	return fmt.Errorf("unknown Unlock edge %s", name)

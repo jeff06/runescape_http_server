@@ -8,18 +8,6 @@ import (
 	"runescape_http_server/ent"
 )
 
-// The OtherRequirementFunc type is an adapter to allow the use of ordinary
-// function as OtherRequirement mutator.
-type OtherRequirementFunc func(context.Context, *ent.OtherRequirementMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f OtherRequirementFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.OtherRequirementMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OtherRequirementMutation", m)
-}
-
 // The SkillFunc type is an adapter to allow the use of ordinary
 // function as Skill mutator.
 type SkillFunc func(context.Context, *ent.SkillMutation) (ent.Value, error)

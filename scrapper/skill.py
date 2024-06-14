@@ -1,6 +1,5 @@
-from bs4 import BeautifulSoup
-import requests
 from requirement import *
+from util import *
 
 base_url = "https://oldschool.runescape.wiki"
 page_path = "/w/Skills"
@@ -16,14 +15,11 @@ for tbody in skills_table:
     for row in rows:
         cols = row.find_all("td")
         skills_page_path.append(cols[1].find("a")["href"])
+        print(cols[1].text)
         insert_skills_values.append(
-            f"('{cols[1].text}', '{cols[2].text.replace("'", "''").replace("\n", "")}', {is_member}),"),
+            f"('{cols[1].text}', '{fix_string_format(cols[2].text)}', {is_member}),"),
     is_member = 1
 
-l = len(insert_skills_values)
-insert_skills_values[l - 1] = insert_skills_values[l - 1][:-1] + ";"
-with open('../database/query/skills/insert.sql', 'w') as f:
-    for line in insert_skills_values:
-        f.write(f"{line}\n")
+complete_save(insert_skills_values, "skills")
 
-scrap(base_url, skills_page_path)
+scrap(base_url)
